@@ -18,8 +18,6 @@ from sklearn.linear_model import LinearRegression
 from math import sqrt
 import math
 
-
-
 # Definindo layout ===================================
 st.set_page_config(layout="wide")
 
