@@ -18,8 +18,11 @@ from sklearn.linear_model import LinearRegression
 from math import sqrt
 import math
 
-# Definindo layout ======================
+# Definindo layout ===================================
 st.set_page_config(layout="wide")
+
+# Set the theme to dark mode =========================
+st.set_theme('dark')
 
 # Remover Warning Mensage =============================
 st.set_option('deprecation.showPyplotGlobalUse', False)
