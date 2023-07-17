@@ -22,7 +22,6 @@ import math
 st.set_page_config(layout="wide")
 
 # Set the theme to dark mode =========================
-base="dark"
 
 # Remover Warning Mensage =============================
 st.set_option('deprecation.showPyplotGlobalUse', False)
@@ -719,7 +718,7 @@ with container:
             else:
                 MM = MM[len(MM) - mm_limit:]
 
-            select_MM = col3.selectbox('Selecione uma Média Móvel', MM)
+            select_MM = col3.selectbox('Média Móvel', MM)
 
         elif select_PerfilRisco == 'Conservador' and select_sinalEntrada == 'Não':
 
