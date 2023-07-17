@@ -19,7 +19,7 @@ from math import sqrt
 import math
 
 # Definindo layout ===================================
-st.set_page_config(page_title="Hello world",
+st.set_page_config(page_title="Quantitative Finance",
         page_icon="chart_with_upwards_trend",
         layout="wide",)
 
