@@ -694,7 +694,7 @@ with container:
     df_cotacoes = carregar_cotacoes()
 
     # Seletor Sinal de Entrada
-    select_sinalEntrada = col0.selectbox("Dando Entrada", ['Não', 'Sim'])
+    select_sinalEntrada = col0.selectbox("Modo de Visualização", ['Analizar Ativos', 'Rastreador de Entrada'])
 
     # Seletor Perfil de Risco
     select_PerfilRisco = col1.selectbox("Perfil de Risco", ['Conservador', 'Moderado', 'Arrojado'])
@@ -704,8 +704,8 @@ with container:
         df_dataset = df_dataset[(df_dataset['ADF'] >= 0.95)]
         df_dataset = df_dataset[(df_dataset['Score_AnoTrim'] >= filtroScore) & (df_dataset['MM'] >= 50) & (df_dataset['Angle_1y'] > 0)]
 
-        if select_PerfilRisco == 'Conservador' and select_sinalEntrada == 'Sim':
-            df_dataset = df_dataset[(df_dataset['Sinal'] == 'Yes') & (df_dataset['STD'] <= -1)]
+        if select_PerfilRisco == 'Conservador' and select_sinalEntrada == 'Rastreador de Entrada':
+            df_dataset = df_dataset[(df_dataset['Sinal'] == 'Rastreador de Entrada') & (df_dataset['STD'] <= -1)]
 
             # Seletor Ações
             tickers = list(df_dataset.index.drop_duplicates())
@@ -722,7 +722,7 @@ with container:
 
             select_MM = col3.selectbox('Média Móvel', MM)
 
-        elif select_PerfilRisco == 'Conservador' and select_sinalEntrada == 'Não':
+        elif select_PerfilRisco == 'Conservador' and select_sinalEntrada == 'Analizar':
 
             # Seletor Ações
             tickers = list(df_dataset.index.drop_duplicates())
