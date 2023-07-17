@@ -673,7 +673,7 @@ st.title('Análise Fundamentalista e Quantitativa de Ações')
 # Menu Lateral
 add_selectbox = st.sidebar.selectbox(
     "!!!EM DESENVOLVIMENTO!!!",
-    ("Opções  !!EM BREVE!! ", "Ações B3  !!EM BREVE!! ", "Long&Short Forex  !!EM BREVE!! ", "Crypto  !!EM BREVE!! ")
+    ("Ações B3", "Opções  !!EM BREVE!! ", "Long&Short Forex  !!EM BREVE!! ", "Crypto  !!EM BREVE!! ")
 )
 
 with st.sidebar:
