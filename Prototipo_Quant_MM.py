@@ -734,7 +734,7 @@ with container:
                 MM = MM[-1:]
             else:
                 MM = MM[len(MM) - mm_limit:]
-            select_MM = col3.selectbox('Selecione uma Média Móvel', MM)
+            select_MM = col3.selectbox('Média Móvel', MM)
 
     elif select_PerfilRisco == 'Moderado':
         filtroScore = 8
@@ -761,7 +761,7 @@ with container:
             else:
                 MM = MM[len(MM) - mm_limit:]
 
-            select_MM = col3.selectbox('Selecione uma Média Móvel', MM)
+            select_MM = col3.selectbox('Média Móvel', MM)
 
         elif select_PerfilRisco == 'Moderado' and select_sinalEntrada == 'Não':
 
@@ -778,7 +778,7 @@ with container:
                 MM = MM[-1:]
             else:
                 MM = MM[len(MM) - mm_limit:]
-            select_MM = col3.selectbox('Selecione uma Média Móvel', MM)
+            select_MM = col3.selectbox('Média Móvel', MM)
 
     elif select_PerfilRisco == 'Arrojado':
         # Seletor Ranck Ações
@@ -812,7 +812,7 @@ with container:
 
             # Seletor Média Móvel
             MM = tuple(df_dataset['MM'][df_dataset.index == select_tickers])
-            select_MM = col3.selectbox('Selecione uma Média Móvel', MM)
+            select_MM = col3.selectbox('Média Móvel', MM)
 
         elif select_PerfilRisco == 'Arrojado' and select_sinalEntrada == 'Não':
 
@@ -822,7 +822,7 @@ with container:
 
             # Seletor Média Móvel
             MM = tuple(df_dataset['MM'][df_dataset.index == select_tickers])
-            select_MM = col3.selectbox('Selecione uma Média Móvel', MM)
+            select_MM = col3.selectbox('Média Móvel', MM)
 
 
 
