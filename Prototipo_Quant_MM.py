@@ -18,8 +18,20 @@ from sklearn.linear_model import LinearRegression
 from math import sqrt
 import math
 
+
+def set_theme():
+    # Set the primary color, background color, secondary background color, text color, and font
+    st.set_page_config(
+        page_title="Your App Name",
+        layout="wide",
+        initial_sidebar_state="expanded",
+        theme="dark",
+    )
+
+# Call the function to set the theme
+set_theme()
 # Definindo layout ===================================
-st.set_page_config(layout="wide")
+#st.set_page_config(layout="wide")
 
 # Set the theme to dark mode =========================
 
