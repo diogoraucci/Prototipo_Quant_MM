@@ -22,7 +22,7 @@ import math
 st.set_page_config(layout="wide")
 
 # Set the theme to dark mode =========================
-st.set_theme('dark')
+base="dark"
 
 # Remover Warning Mensage =============================
 st.set_option('deprecation.showPyplotGlobalUse', False)
