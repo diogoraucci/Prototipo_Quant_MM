@@ -722,7 +722,7 @@ with container:
 
             select_MM = col3.selectbox('Média Móvel', MM)
 
-        elif select_PerfilRisco == 'Conservador' and select_sinalEntrada == 'Analizar':
+        elif select_PerfilRisco == 'Conservador' and select_sinalEntrada == 'Analizar Ativos':
 
             # Seletor Ações
             tickers = list(df_dataset.index.drop_duplicates())
@@ -744,7 +744,7 @@ with container:
         #df_dataset = df_dataset[(df_dataset['ADF'] >= 0.95)]
         #df_dataset = df_dataset[(df_dataset['Score_AnoTrim'] >= filtroScore) & (df_dataset['MM'] >= 50) & (df_dataset['Angle_1y'] > 0)]
 
-        if select_PerfilRisco == 'Moderado' and select_sinalEntrada == 'Sim':
+        if select_PerfilRisco == 'Moderado' and select_sinalEntrada == 'Rastreador de Entrada':
             df_dataset = carregar_dataset()
             df_dataset = df_dataset[(df_dataset['ADF'] >= 0.95) & (df_dataset['Score_AnoTrim'] >= filtroScore) & (df_dataset['MM'] >= 50) & (df_dataset['Angle_1y'] > 0) & (df_dataset['Sinal'] == 'Yes') & ((df_dataset['STD'] <= -1) | (df_dataset['STD'] >= 2))]
 
@@ -765,7 +765,7 @@ with container:
 
             select_MM = col3.selectbox('Média Móvel', MM)
 
-        elif select_PerfilRisco == 'Moderado' and select_sinalEntrada == 'Não':
+        elif select_PerfilRisco == 'Moderado' and select_sinalEntrada == 'Analizar Ativos':
 
             # Seletor Ações
             df_dataset = carregar_dataset()
@@ -804,7 +804,7 @@ with container:
         df_dataset = df_dataset[(df_dataset['ADF'] >= 0.90)]
         df_dataset = df_dataset[(df_dataset['Score_AnoTrim'] >= filtroScore)]
 
-        if select_PerfilRisco == 'Arrojado' and select_sinalEntrada == 'Sim':
+        if select_PerfilRisco == 'Arrojado' and select_sinalEntrada == 'Rastreador de Entrada':
             df_dataset = df_dataset[(df_dataset['Sinal'] == 'Yes')]
 
             # Seletor Ações
@@ -816,7 +816,7 @@ with container:
             MM = tuple(df_dataset['MM'][df_dataset.index == select_tickers])
             select_MM = col3.selectbox('Média Móvel', MM)
 
-        elif select_PerfilRisco == 'Arrojado' and select_sinalEntrada == 'Não':
+        elif select_PerfilRisco == 'Arrojado' and select_sinalEntrada == 'Analizar Ativos':
 
             # Seletor Ações
             tickers = list(df_dataset.index.drop_duplicates())
