@@ -21,7 +21,7 @@ import math
 
 
 # Definindo layout ===================================
-st.set_page_config(layout="wide", theme="dark")
+st.set_page_config(layout="wide")
 
 # Set the theme to dark mode =========================
 
