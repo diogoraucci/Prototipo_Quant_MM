@@ -766,6 +766,7 @@ with container:
         elif select_PerfilRisco == 'Moderado' and select_sinalEntrada == 'Não':
 
             # Seletor Ações
+            df_dataset = carregar_dataset()
             tickers = list(df_dataset.index.drop_duplicates())
             select_tickers = col2.selectbox('Selecione um Ticker', sorted(tickers))
             #df_cotacoes = carregar_cotacoes()
