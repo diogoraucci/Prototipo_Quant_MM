@@ -1,15 +1,18 @@
 # Modelo de Analise Fundamentalista e Quantitativa de Ativos Financeiros
-Prever cancelamentos de reservas de hospedagem.
+Este repositório é parte integral do protótipo que estou desenvolvendo de um modelo quantitativo para analisar e rastrear oportunidades em diferentes ativos financeiros.
 
 [![NPM](https://img.shields.io/npm/l/react)](https://github.com/diogoraucci/Cotacoes_MT5/blob/main/LICENSE)
 
 ## 
 
 # Sobre o código
-Este repositório é parte integral do protótipo que estou desenvolvendo de um modelo quantitativo para analisar e rastrear oportunidades em diferentes ativos financeiros.
+
 1° Filtra os Ativos a partir de seus indicadores fundamentlistas, últimos resultados trimestrais e anuais.
+
 2° Testa a existência de cointegração em 200 médias móveis simples dos retornos percentuais de cada ativos pré selecionado.
+
 3° Selecionar as médias moveis que possuem aderência e estacionariedade com os retornos.
+
 4° Rastreiar ativos que possuem lucro e geração de caixa recorrente, boa gestão e de grande valor que estejam com o preço muito descontado, sinalizando eventuais oportunidades de compra.
 
 # Tecnologias utilizadas Nesse Notebook       
