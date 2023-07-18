@@ -852,7 +852,7 @@ with container:
                     main_arrojado(select_MM, select_tickers)
 
             except:
-                st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
+                st.markdown(f'No momento, não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
 
     with col2:
         # Criar o gráfico de barras horizontais Resultado Trimestral com Altair
