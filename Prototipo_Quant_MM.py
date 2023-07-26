@@ -709,6 +709,7 @@ with container:
         # Se for maior, limpar a memória cache do DataFrame df_cotacoes
         st.experimental_memo.clear(df_cotacoes)
         st.experimental_memo.clear(df_dataset)
+        st.cache.clear()
     else:
         # Caso contrário, não fazer nada
         pass
@@ -723,6 +724,7 @@ with container:
         df_dataset = carregar_dataset()
         df_dataset = df_dataset[(df_dataset['ADF'] >= 0.95)]
         df_dataset = df_dataset[(df_dataset['Score_AnoTrim'] >= filtroScore) & (df_dataset['MM'] >= 50) & (df_dataset['Angle_1y'] > 0)]
+
 
         if select_PerfilRisco == 'Conservador' and select_sinalEntrada == 'Rastreador de Entrada':
             df_dataset = df_dataset[(df_dataset['Sinal'] == 'Rastreador de Entrada') & (df_dataset['STD'] <= -1)]
