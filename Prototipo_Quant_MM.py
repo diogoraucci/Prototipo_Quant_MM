@@ -667,6 +667,15 @@ def chart_vol(select_tickers):
 df_descricao = carregar_descricao()
 df_rankFM = carregar_rankFM()
 
+# Verificador Cache
+url = "https://raw.githubusercontent.com/diogoraucci/Prototipo_Quant_MM/main/dataControl.csv"
+# Faz o download do conteúdo do arquivo
+response = requests.get(url)
+conteudo_csv = response.content
+# Lê o conteúdo baixado como um DataFrame do pandas
+dataControl = pd.read_csv(BytesIO(conteudo_csv))#, index_col=0)
+
+
 # CORPO DA PÁGINA # =========================================================================
 st.title('Análise Fundamentalista e Quantitativa de Ações')
 
@@ -692,6 +701,15 @@ with container:
 
     df_resultadosAnual, df_resultadosTrim = carregar_resultado()
     df_cotacoes = carregar_cotacoes()
+
+    # Verificardor Limpeza de Cache
+
+    dataControl_cache = pd.DataFrame([df_cotacoes.index[-1]])
+    if dataControl.iat[0, 0] > dataControl_cache.iat[0, 0]:
+        df_cotacoes.clear()
+        df_dataset.clear()
+    else:
+        None
 
     # Seletor Sinal de Entrada
     select_sinalEntrada = col0.selectbox("Modo de Visualização", ['Analizar Ativos', 'Rastreador de Entrada'])
