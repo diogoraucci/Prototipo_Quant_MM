@@ -703,13 +703,15 @@ with container:
     df_cotacoes = carregar_cotacoes()
 
     # Verificardor Limpeza de Cache
-
     dataControl_cache = pd.DataFrame([df_cotacoes.index[-1]])
-    if dataControl.iat[0, 0] > dataControl_cache.iat[0, 0]:
-        df_cotacoes.clear()
-        df_dataset.clear()
+    # Verificar se a última data do df_cotacoes é maior que a primeira data do dataControl_cache
+    if df_cotacoes.index[-1] > dataControl_cache.iat[0, 0]:
+        # Se for maior, limpar a memória cache do DataFrame df_cotacoes
+        st.experimental_memo.clear(df_cotacoes)
+        st.experimental_memo.clear(df_dataset)
     else:
-        None
+        # Caso contrário, não fazer nada
+        pass
 
     # Seletor Sinal de Entrada
     select_sinalEntrada = col0.selectbox("Modo de Visualização", ['Analizar Ativos', 'Rastreador de Entrada'])
