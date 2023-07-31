@@ -674,7 +674,7 @@ response = requests.get(url)
 conteudo_csv = response.content
 # Lê o conteúdo baixado como um DataFrame do pandas
 dataControl = pd.read_csv(BytesIO(conteudo_csv))#, index_col=0)
-teteData = pd.DataFrame(dataControl.iat[0,0])
+teteData = pd.DataFrame([[dataControl.iat[0, 0]]], columns=['0'])
 #teteData = pd.DataFrame({'Data': [teteData]})
 st.dataframe(teteData)
 
