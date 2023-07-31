@@ -676,11 +676,16 @@ conteudo_csv = response.content
 dataControl = pd.read_csv(BytesIO(conteudo_csv))#, index_col=0)
 teteData = pd.DataFrame([[dataControl.iat[0, 0]]], columns=['0'])
 #teteData = pd.DataFrame({'Data': [teteData]})
-st.dataframe(teteData)
+#st.dataframe(teteData)
 
-teteData = '2023-07-28'
-if dataControl == teteData:
-    teste2 = dataControl
+teteData2 = pd.DataFrame([[dataControl.iat[0, 0]]], columns=['0'])
+#teteData = pd.DataFrame({'Data': [teteData]})
+#st.dataframe(teteData2)
+
+
+teste2 = pd.DataFrame(['2023-07-28'])
+if teteData2 == teteData:
+    st.dataframe(teteData2)
 else:
     teste2 = pd.DataFrame(['NOT'])
 st.dataframe(teste2)
