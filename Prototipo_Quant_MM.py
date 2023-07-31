@@ -686,10 +686,12 @@ teteData2 = pd.DataFrame([[dataControl.iat[0, 0]]], columns=['0'])
 teste2 = pd.DataFrame(['2023-07-28'])
 if teteData2.equals(teteData):
     # Os DataFrames são iguais
-    st.dataframe(teteData2)
+    st.dataframe(teste2)
+
 else:
     # Os DataFrames são diferentes
-    st.dataframe(teste2)
+    st.dataframe(teteData2)
+
 # CORPO DA PÁGINA # =========================================================================
 st.title('Análise Fundamentalista e Quantitativa de Ações')
 
