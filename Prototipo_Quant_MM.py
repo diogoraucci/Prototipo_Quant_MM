@@ -683,17 +683,6 @@ teteData2 = pd.DataFrame([[dataControl.iat[0, 0]]], columns=['0'])
 #st.dataframe(teteData2)
 
 
-teste2 = pd.DataFrame(['2023-07-28'])
-if teteData2.equals(teteData):
-
-    del df_cotacoes
-    # Os DataFrames são iguais
-    st.dataframe(teteData2)
-    st.clear_cache()
-else:
-    # Os DataFrames são diferentes
-    st.dataframe(teste2)
-
 # CORPO DA PÁGINA # =========================================================================
 st.title('Análise Fundamentalista e Quantitativa de Ações')
 
@@ -719,6 +708,17 @@ with container:
 
     df_resultadosAnual, df_resultadosTrim = carregar_resultado()
     df_cotacoes = carregar_cotacoes()
+
+    teste2 = pd.DataFrame(['2023-07-28']) #================================
+    if teteData2.equals(teteData):
+
+        del df_cotacoes
+        # Os DataFrames são iguais
+        st.dataframe(teteData2)
+        st.clear_cache()
+    else:
+        # Os DataFrames são diferentes
+        st.dataframe(teste2) #================================
 
     # Verificardor Limpeza de Cache
     dataControl_cache = pd.DataFrame([df_cotacoes.index[-1]])
