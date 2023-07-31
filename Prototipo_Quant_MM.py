@@ -715,7 +715,7 @@ with container:
         del df_cotacoes
         # Os DataFrames são iguais
         st.dataframe(teteData2)
-        st.runtime.legacy_caching.clear_cache()
+        st.cache_data.clear()
         df_cotacoes = carregar_cotacoes()
     else:
         # Os DataFrames são diferentes
