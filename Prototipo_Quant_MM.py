@@ -675,7 +675,8 @@ conteudo_csv = response.content
 # Lê o conteúdo baixado como um DataFrame do pandas
 dataControl = pd.read_csv(BytesIO(conteudo_csv))#, index_col=0)
 teteData = ['2023-07-28']
-st.dataframe(dataControl.iloc[0,0])
+#teteData = pd.DataFrame({'Data': [teteData]})
+st.dataframe(teteData)
 
 teteData = '2023-07-28'
 if dataControl == teteData:
