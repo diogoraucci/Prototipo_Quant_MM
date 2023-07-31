@@ -22,7 +22,7 @@ import math
 st.set_page_config(page_title="Quantitative Finance",
         page_icon="chart_with_upwards_trend",
         layout="wide",)
-
+st.cache_data.clear()
 # Set the theme to dark mode =========================
 
 # Remover Warning Mensage =============================
