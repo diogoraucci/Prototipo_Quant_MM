@@ -674,7 +674,8 @@ response = requests.get(url)
 conteudo_csv = response.content
 # Lê o conteúdo baixado como um DataFrame do pandas
 dataControl = pd.read_csv(BytesIO(conteudo_csv))#, index_col=0)
-st.dataframe(dataControl)
+teteData = '2023-07-28'
+st.dataframe([teteData])
 
 teteData = '2023-07-28'
 if dataControl == teteData:
@@ -853,8 +854,6 @@ with container:
             # Seletor Média Móvel
             MM = tuple(df_dataset['MM'][df_dataset.index == select_tickers])
             select_MM = col3.selectbox('Média Móvel', MM)
-
-
 
  # ----------------------------------------------------------------------------------
 # Segunda parte com gráficos de linhas e de barras horizontais
