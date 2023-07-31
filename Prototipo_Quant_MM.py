@@ -28,9 +28,7 @@ st.set_page_config(page_title="Quantitative Finance",
 # Remover Warning Mensage =============================
 st.set_option('deprecation.showPyplotGlobalUse', False)
 #======================================================
-st.experimental_memo.clear()
-st.experimental_memo.clear()
-st.cache.clear()
+
 # Definir Variaveis
 
 datafim = date.today() #'2023-06-01'
@@ -91,7 +89,7 @@ def carregar_resultado():
     df_resultadosTrim = pd.read_excel(BytesIO(conteudo_excel), sheet_name='ResTrimBR', index_col=0, engine='openpyxl')
     return df_resultadosAnual, df_resultadosTrim
 
-@st.cache_data ()
+#@st.cache_data ()
 def carregar_dataset():
     # URL do arquivo Excel no GitHub
     url = "https://raw.githubusercontent.com/diogoraucci/Prototipo_Quant_MM/main/DF_completo.xlsx"
