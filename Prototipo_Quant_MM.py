@@ -687,7 +687,7 @@ teste2 = pd.DataFrame(['2023-07-28'])
 if teteData2.equals(teteData):
     # Os DataFrames são iguais
     st.dataframe(teteData2)
-    st.runtime.legacy_caching.clear_cache()
+    st.clear_cache()
 else:
     # Os DataFrames são diferentes
     st.dataframe(teste2)
