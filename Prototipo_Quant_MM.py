@@ -676,6 +676,12 @@ conteudo_csv = response.content
 dataControl = pd.read_csv(BytesIO(conteudo_csv))#, index_col=0)
 st.dataframe(dataControl)
 
+teteData = '2023-07-28'
+if dataControl == teteData:
+    teste2 = dataControl
+else:
+    teste2 = pd.DataFrame(['NOT'])
+st.dataframe(teste2)
 # CORPO DA PÁGINA # =========================================================================
 st.title('Análise Fundamentalista e Quantitativa de Ações')
 
