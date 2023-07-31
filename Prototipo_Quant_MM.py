@@ -736,7 +736,7 @@ with container:
 
             # Seletor Média Móvel
             MM = tuple(df_dataset['MM'][df_dataset.index == select_tickers])
-            mm_limit = int(len(MM) / 3)
+            mm_limit = int(len(MM))
             if mm_limit < 1:
                 MM = MM[-1:]
             else:
@@ -753,7 +753,7 @@ with container:
 
             # Seletor Média Móvel
             MM = tuple(df_dataset['MM'][df_dataset.index == select_tickers])
-            mm_limit = int(len(MM) / 4)
+            mm_limit = int(len(MM) )
             if mm_limit < 1:
                 MM = MM[-1:]
             else:
@@ -779,7 +779,7 @@ with container:
 
             # Seletor Média Móvel
             MM = tuple(df_dataset['MM'][df_dataset.index == select_tickers])
-            mm_limit = int(len(MM) / 2)
+            mm_limit = int(len(MM))
             if mm_limit < 1:
                 MM = MM[-1:]
             else:
@@ -797,7 +797,7 @@ with container:
 
             # Seletor Média Móvel
             MM = tuple(df_dataset['MM'][df_dataset.index == select_tickers])
-            mm_limit = int(len(MM) / 2)
+            mm_limit = int(len(MM))
             if mm_limit < 1:
                 MM = MM[-1:]
             else:
