@@ -22,7 +22,7 @@ import math
 st.set_page_config(page_title="Quantitative Finance",
         page_icon="chart_with_upwards_trend",
         layout="wide",)
-st.cache_data.clear()
+
 # Set the theme to dark mode =========================
 
 # Remover Warning Mensage =============================
@@ -682,6 +682,26 @@ teteData2 = pd.DataFrame([[dataControl.iat[0, 0]]], columns=['0'])
 #teteData = pd.DataFrame({'Data': [teteData]})
 #st.dataframe(teteData2)
 
+#df_cotacoes.index[-1]
+teste2 = pd.DataFrame(['Diferentes'])  # ================================
+teste1 = pd.DataFrame(['Iguais'])  # ================================
+if teteData2.equals(teteData):
+    # Os DataFrames são iguais
+    st.dataframe(teste1)
+
+else:
+    # Os DataFrames são diferentes
+    st.dataframe(teste2)  # ================================
+    st.cache_data.clear()
+
+
+
+
+
+
+
+
+
 
 # CORPO DA PÁGINA # =========================================================================
 st.title('Análise Fundamentalista e Quantitativa de Ações')
@@ -709,17 +729,6 @@ with container:
     df_resultadosAnual, df_resultadosTrim = carregar_resultado()
     df_cotacoes = carregar_cotacoes()
 
-    teste2 = pd.DataFrame(['2023-07-28']) #================================
-    if teteData2.equals(teteData):
-
-        del df_cotacoes
-        # Os DataFrames são iguais
-        st.dataframe(teteData2)
-        st.cache_data.clear()
-        df_cotacoes = carregar_cotacoes()
-    else:
-        # Os DataFrames são diferentes
-        st.dataframe(teste2) #================================
 
     # Verificardor Limpeza de Cache
     dataControl_cache = pd.DataFrame([df_cotacoes.index[-1]])
