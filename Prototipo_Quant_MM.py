@@ -980,3 +980,5 @@ with container:
         except:
             # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
             print()
+
+st.dataframe(dataControl)
