@@ -674,7 +674,7 @@ response = requests.get(url)
 conteudo_csv = response.content
 # Lê o conteúdo baixado como um DataFrame do pandas
 dataControl = pd.read_csv(BytesIO(conteudo_csv))#, index_col=0)
-
+st.dataframe(dataControl)
 
 # CORPO DA PÁGINA # =========================================================================
 st.title('Análise Fundamentalista e Quantitativa de Ações')
