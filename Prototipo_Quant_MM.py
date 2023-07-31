@@ -28,8 +28,8 @@ st.set_page_config(page_title="Quantitative Finance",
 # Remover Warning Mensage =============================
 st.set_option('deprecation.showPyplotGlobalUse', False)
 #======================================================
-st.experimental_memo.clear(df_cotacoes)
-st.experimental_memo.clear(df_dataset)
+st.experimental_memo.clear()
+st.experimental_memo.clear()
 st.cache.clear()
 # Definir Variaveis
 
