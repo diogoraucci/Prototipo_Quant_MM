@@ -982,3 +982,4 @@ with container:
             print()
 
 st.dataframe(dataControl)
+st.dataframe(dataControl_cache)
