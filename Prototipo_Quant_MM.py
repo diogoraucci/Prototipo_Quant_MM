@@ -686,10 +686,7 @@ teteData2 = pd.DataFrame([[dataControl.iat[0, 0]]], columns=['0'])
 teste2 = pd.DataFrame(['2023-07-28'])
 if teteData2.equals(teteData):
 
-    from cachetools import cached, TTLCache
-    # Defina o cache com um tempo de expiração (por exemplo, 1 dia)
-    cache = TTLCache(maxsize=100, ttl=86400)  # 86400 segundos = 1 dia
-    cache.clear()
+    del df_cotacoes
     # Os DataFrames são iguais
     st.dataframe(teteData2)
     st.clear_cache()
