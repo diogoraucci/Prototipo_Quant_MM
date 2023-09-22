@@ -703,7 +703,7 @@ teste1 = pd.DataFrame(['Iguais'])  # ================================
 if teteData2.equals(teteData):
     # Os DataFrames são iguais
     st.dataframe(teste1)
-    st.carregar_resultado.clear()
+    st.cache_data.clear()
     st.carregar_rankFM.clear()
 
 else:
