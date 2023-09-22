@@ -694,7 +694,7 @@ else:
     st.dataframe(teste2)  # ================================
     st.cache_data.clear()
 
-st.dataframe(teste1)
+st.dataframe(teteData)
 st.dataframe(teste2)
 
 
