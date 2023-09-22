@@ -689,7 +689,7 @@ teste1 = pd.DataFrame(['Iguais'])  # ================================
 if teteData2.equals(teteData):
     # Os DataFrames são iguais
     st.dataframe(teste1)
-    st.dataframe([df_cotacoes.index[-1]])
+    st.dataframe(pd.DataFrame[df_cotacoes])
 else:
     # Os DataFrames são diferentes
     st.dataframe(teste2)  # ================================
