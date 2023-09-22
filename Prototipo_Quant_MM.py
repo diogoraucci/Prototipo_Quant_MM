@@ -668,9 +668,9 @@ df_descricao = carregar_descricao()
 df_rankFM = carregar_rankFM()
 
 # Verificador Cache
-url = "https://raw.githubusercontent.com/diogoraucci/Prototipo_Quant_MM/main/dataControl.csv"
+url1 = "https://raw.githubusercontent.com/diogoraucci/Prototipo_Quant_MM/main/dataControl.csv"
 # Faz o download do conteúdo do arquivo
-response = requests.get(url)
+response = requests.get(url1)
 conteudo_csv = response.content
 # Lê o conteúdo baixado como um DataFrame do pandas
 dataControl = pd.read_csv(BytesIO(conteudo_csv))#, index_col=0)
