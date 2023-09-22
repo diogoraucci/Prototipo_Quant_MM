@@ -678,7 +678,7 @@ teteData = pd.DataFrame([[dataControl.iat[0, 0]]], columns=['0'])
 #teteData = pd.DataFrame({'Data': [teteData]})
 #st.dataframe(teteData)
 
-teteData2 = [df_cotacoes.index[-1]
+teteData2 = df_cotacoes.index[-1]
 #teteData = pd.DataFrame({'Data': [teteData]})
 #st.dataframe(teteData2)
 
