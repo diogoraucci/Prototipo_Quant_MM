@@ -686,10 +686,11 @@ teteData2 = pd.DataFrame([[dataControl.iat[0, 0]]], columns=['0'])
 #df_cotacoes.index[-1]
 teste2 = pd.DataFrame(['Diferentes'])  # ================================
 teste1 = pd.DataFrame(['Iguais'])  # ================================
+caralho = pd.DataFrame(['Cabeça do eu pau'])
 if teteData2.equals(teteData):
     # Os DataFrames são iguais
     st.dataframe(teste1)
-    st.dataframe(df_cotacoes)
+    st.dataframe(caralho)
 else:
     # Os DataFrames são diferentes
     st.dataframe(teste2)  # ================================
