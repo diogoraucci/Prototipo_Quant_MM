@@ -688,9 +688,9 @@ conteudo_excel = response.content
 # Lê o conteúdo baixado como um arquivo Excel usando BytesIO
 df_cotacoes2 = pd.read_excel(BytesIO(conteudo_excel), sheet_name='Cotacoes', index_col=0, engine='openpyxl')
 df_cotacoes2 = pd.DataFrame(df_cotacoes2)
-df_cotacoes2 = df_cotacoes2.index[-1]
+#df_cotacoes2 = df_cotacoes2.index[-1]
 
-df_cotacoes2 = pd.DataFrame([[df_cotacoes2.iat[1,1]]])
+#df_cotacoes2 = pd.DataFrame([[df_cotacoes2.iat[1,1]]])
 
 
 teteData2 = pd.DataFrame([[dataControl.iat[0, 0]]], columns=['0'])
