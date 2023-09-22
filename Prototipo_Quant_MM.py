@@ -706,7 +706,7 @@ if teteData2.equals(teteData):
 
 else:
     # Os DataFrames são diferentes
-    st.dataframe(teste2)  # ================================
+    #st.dataframe(teste2)  # ================================
     st.cache_data.clear()
 
 #st.dataframe(teteData)
