@@ -687,7 +687,7 @@ response = requests.get(url2)
 conteudo_excel = response.content
 # Lê o conteúdo baixado como um arquivo Excel usando BytesIO
 df_cotacoes2 = pd.read_excel(BytesIO(conteudo_excel), sheet_name='Cotacoes', index_col=0, engine='openpyxl')
-
+df_cotacoes2 = df_cotacoes2.index[-1]
 
 
 
