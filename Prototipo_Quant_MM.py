@@ -678,10 +678,11 @@ teteData = pd.DataFrame([[dataControl.iat[0, 0]]], columns=['0'])
 #teteData = pd.DataFrame({'Data': [teteData]})
 #st.dataframe(teteData)
 
-teteData2 = pd.DataFrame([[dataControl.iat[0, 0]]], columns=['0'])
+teteData2 = pd.DataFrame([df_cotacoes.index[-1]])
 #teteData = pd.DataFrame({'Data': [teteData]})
 #st.dataframe(teteData2)
 
+#df_cotacoes.index[-1]
 #df_cotacoes.index[-1]
 teste2 = pd.DataFrame(['Diferentes'])  # ================================
 teste1 = pd.DataFrame(['Iguais'])  # ================================
@@ -1005,7 +1006,4 @@ with container:
             st.text_area("Descrição da Empresa", value=descricao, height=alturaTextBox, max_chars=None)
         except:
             # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
-            print()
-
-st.dataframe(dataControl)
-st.dataframe(dataControl_cache)
+            None
