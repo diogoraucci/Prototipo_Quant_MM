@@ -710,6 +710,7 @@ else:
     st.cache_data.clear()
 
 st.dataframe(teteData)
+st.dataframe(teteData2)
 st.dataframe(df_cotacoes2)
 
 
