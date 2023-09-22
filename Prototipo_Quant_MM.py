@@ -703,17 +703,15 @@ teste1 = pd.DataFrame(['Iguais'])  # ================================
 if teteData2.equals(teteData):
     # Os DataFrames são iguais
     st.dataframe(teste1)
-    st.cache_data.clear()
-    
 
 else:
     # Os DataFrames são diferentes
     st.dataframe(teste2)  # ================================
     st.cache_data.clear()
 
-st.dataframe(teteData)
-st.dataframe(teteData2)
-st.dataframe(df_cotacoes2)
+#st.dataframe(teteData)
+#st.dataframe(teteData2)
+#st.dataframe(df_cotacoes2)
 
 
 
