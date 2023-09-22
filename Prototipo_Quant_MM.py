@@ -691,7 +691,7 @@ df_cotacoes2 = pd.DataFrame(df_cotacoes2)
 #df_cotacoes2 = df_cotacoes2.index[-1]
 
 df_cotacoes2 = pd.DataFrame([[df_cotacoes2.index[-1]]])
-
+#chart_vol carregar_resultado carregar_rankFM carregar_descricao
 
 teteData2 = pd.DataFrame([[dataControl.iat[0, 0]]], columns=['0'])
 #teteData = pd.DataFrame({'Data': [teteData]})
@@ -703,7 +703,8 @@ teste1 = pd.DataFrame(['Iguais'])  # ================================
 if teteData2.equals(teteData):
     # Os DataFrames são iguais
     st.dataframe(teste1)
-
+    st.carregar_resultado.clear()
+    st.carregar_rankFM.clear()
 
 else:
     # Os DataFrames são diferentes
