@@ -704,7 +704,7 @@ if teteData2.equals(teteData):
     # Os DataFrames são iguais
     st.dataframe(teste1)
     st.cache_data.clear()
-    st.carregar_rankFM.clear()
+    
 
 else:
     # Os DataFrames são diferentes
