@@ -967,7 +967,12 @@ with container:
             print()
 
         # Criar o gráfico de barras horizontais Resultado Anual ===============================
+        res_anual.index = pd.to_datetime(res_anual.index, errors='coerce')
         res_anual['Data'] = res_anual.index.strftime('    --   %Y')
+
+
+        
+        
         res_anual.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
 
         chart_anual = (
