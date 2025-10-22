@@ -896,7 +896,7 @@ res_trim = df_resultadosTrim[df_resultadosTrim['TICKER'] == select_tickers ]
 res_anual = df_resultadosAnual[df_resultadosAnual['TICKER'] == select_tickers ]
 
 with container:
-    col1, col2 = st.columns([10, 4])
+    col1, col2 = st.columns([10, 1])
 
     # Gráfico de linhas na coluna 1
     with col1:
