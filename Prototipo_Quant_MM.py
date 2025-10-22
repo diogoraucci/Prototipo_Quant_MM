@@ -961,47 +961,42 @@ with container:
 #######################################################################################################
         
         # Criar o gráfico de barras horizontais Resultado Anual ===============================
-        res_anual.index = pd.to_datetime(res_anual.index, errors='coerce')
-        res_anual['Data'] = res_anual.index.strftime('    --   %Y')
-
-
+        # Converter o índice para datetime (caso ainda não seja)
+            res_anual.index = pd.to_datetime(res_anual.index, errors='coerce')
+            
+            # Garantir coluna de Data
+            res_anual['Data'] = res_anual.index
+            
+            # Renomear coluna de lucro
+            res_anual.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
         
-        
-        res_anual.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
-
-        chart_anual = (
-            alt.Chart(res_anual)
+            # Gráfico de barras verticais — um por ano
+            chart_anual = (
+                alt.Chart(res_anual)
                 .mark_bar()
                 .encode(
-                y=alt.Y('Data:O', title='', sort=alt.EncodingSortField('Data', order='ascending')),
-                x=alt.X('NetIncome:Q', title=''),
-                color=alt.condition(alt.datum.NetIncome > 0, alt.value(colorUp), alt.value(colorDown))
+                    y=alt.Y('year(Data):O', title='Ano', sort='ascending'),
+                    x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
+                    color=alt.condition(
+                        alt.datum.NetIncome > 0,
+                        alt.value(colorUp),
+                        alt.value(colorDown)
+                    ),
+                    facet=alt.Facet('TICKER:N', title='')  # opcional, separa por empresa
+                )
+                .properties(
+                    title='Resultado Anual',
+                    width=chartwidth,
+                    height=chartheight
+                )
+                .configure_axis(
+                    labelFontSize=14,
+                    titleFontSize=16
+                )
+                .configure_axisX(
+                    labels=False
+                )
             )
-        )
-
-        # Adicionar valores das barras
-        text_anual = (
-            chart_anual.mark_text(
-                align='left',
-                baseline='middle',
-                dx=10,  # Espaço para o rótulo
-                dy=0  # Ajuste vertical dos rótulos
-            )
-        )
-
-        # Configurações adicionais
-        chart_anual = (
-                chart_anual + text_anual
-        ).properties(
-            title='Resultado Anual',
-            width=chartwidth,  # Aumentar a largura do gráfico
-            height=chartheight  # Aumentar a altura do gráfico
-        ).configure_axis(
-            labelFontSize=14,  # Aumentar o tamanho da fonte do eixo
-            titleFontSize=16  # Aumentar o tamanho da fonte do título
-        ).configure_axisX(
-            labels=False  # Remover rótulos do eixo x
-        )
 
         # Exibir o gráfico anual no Streamlit
         try:
