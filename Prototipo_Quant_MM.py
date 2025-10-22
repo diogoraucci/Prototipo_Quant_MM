@@ -918,18 +918,23 @@ with container:
     with col2:
         # Garantir que a coluna 'Data' seja datetime
         res_trim['Data'] = pd.to_datetime(res_trim['Data'], errors='coerce')
-        #res_trim['Data'] = res_trim.index.strftime('%Y-%m')
         
+        # Remover linhas inválidas (NaT)
+        res_trim = res_trim.dropna(subset=['Data']).copy()
         
         # Renomear a coluna 'Net Income'
         res_trim.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
         
-        # Criar o gráfico de barras horizontais com Altair
+        # Garantir que NetIncome seja numérico
+        res_trim['NetIncome'] = pd.to_numeric(res_trim['NetIncome'], errors='coerce')
+        res_trim = res_trim.dropna(subset=['NetIncome']).copy()
+        
+        # Criar o gráfico de barras horizontais com Altair (mantendo sua estrutura)
         chart_trim = (
             alt.Chart(res_trim)
             .mark_bar()
             .encode(
-                y=alt.Y('yearquarter(Data):T', title='Trimestre', sort='ascending'),
+                y=alt.Y('Data:T', title='Data', sort=alt.EncodingSortField('Data', order='ascending')),
                 x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
                 color=alt.condition(
                     alt.datum.NetIncome > 0,
