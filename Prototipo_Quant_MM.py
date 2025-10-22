@@ -965,6 +965,7 @@ with container:
         # Criar o gráfico de barras horizontais Resultado Anual ===============================
         # Converter o índice para datetime (caso ainda não seja)
             res_anual.index = pd.to_datetime(res_anual.index, errors='coerce')
+            res_anual['Data'] = res_anual.index.strftime('    --   %Y')
             
             # Garantir coluna de Data
             res_anual['Data'] = res_anual.index
