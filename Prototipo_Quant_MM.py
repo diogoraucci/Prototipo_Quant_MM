@@ -915,53 +915,6 @@ with container:
             except:
                 st.markdown(f'No momento, não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
 
-'''    with col2:
-        # Criar o gráfico de barras horizontais Resultado Trimestral com Altair
-        #res_trim['Data'] = res_trim.index.strftime('%Y-%m')
-        res_trim.index = pd.to_datetime(res_trim.index, errors='coerce')
-        res_trim['Data'] = res_trim.index.strftime('%Y-%m')
-        
-        res_trim.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
-
-        chart_trim = (
-            alt.Chart(res_trim)
-                .mark_bar()
-                .encode(
-                y=alt.Y('Data:O', title='', sort=alt.EncodingSortField('Data', order='ascending')),
-                x=alt.X('NetIncome:Q', title=''),
-                color=alt.condition(alt.datum.NetIncome > 0, alt.value(colorUp), alt.value(colorDown))
-            )
-        )
-
-        # Adicionar valores das barras
-        text_trim = (
-            chart_trim.mark_text(
-                align='left',
-                baseline='middle',
-                dx=5  # Espaço para o rótulo
-            )
-        )
-
-        # Configurações adicionais
-        chart_trim = (
-                chart_trim + text_trim
-        ).properties(
-            title='Resultado Trimestral',
-            width=chartwidth,  # Aumentar a largura do gráfico
-            height=chartheight  # Aumentar a altura do gráfico
-        ).configure_axis(
-            labelFontSize=14,  # Aumentar o tamanho da fonte do eixo
-            titleFontSize=16  # Aumentar o tamanho da fonte do título
-        ).configure_axisX(
-            labels=False  # Remover rótulos do eixo x
-        )
-
-        # Exibir o gráfico trimestral no Streamlit
-        try:
-            st.altair_chart(chart_trim, use_container_width=True)
-        except:
-            # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
-            print()'''
     with col2:
         # Garantir que a coluna 'Data' seja datetime
         res_trim['Data'] = pd.to_datetime(res_trim['Data'], errors='coerce')
@@ -996,12 +949,17 @@ with container:
                 labels=False
             )
         )
-    
-        # Exibir o gráfico
-        st.altair_chart(chart_trim, use_container_width=True)
 
+        # Exibir o gráfico trimestral no Streamlit
+        try:
+            st.altair_chart(chart_trim, use_container_width=True)
+        except:
+            # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
+            print()
 
-    
+        
+#######################################################################################################
+        
         # Criar o gráfico de barras horizontais Resultado Anual ===============================
         res_anual.index = pd.to_datetime(res_anual.index, errors='coerce')
         res_anual['Data'] = res_anual.index.strftime('    --   %Y')
