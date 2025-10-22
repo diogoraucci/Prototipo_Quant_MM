@@ -917,7 +917,13 @@ with container:
 
     with col2:
         # Criar o gráfico de barras horizontais Resultado Trimestral com Altair
+        #res_trim['Data'] = res_trim.index.strftime('%Y-%m')
+        res_trim.index = pd.to_datetime(res_trim.index, errors='coerce')
         res_trim['Data'] = res_trim.index.strftime('%Y-%m')
+
+
+
+        
         res_trim.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
 
         chart_trim = (
