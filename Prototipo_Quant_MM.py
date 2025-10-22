@@ -74,7 +74,7 @@ def carregar_rankFM():
     response = requests.get(url)
     conteudo_excel = response.content
     # Lê o conteúdo baixado como um arquivo Excel usando BytesIO
-    df_rankFM = pd.read_excel(BytesIO(conteudo_excel), sheet_name='FM_RankScore', index_col=0, engine='openpyxl')
+    df_rankFM = pd.read_excel(BytesIO(conteudo_excel), sheet_name='FM_acoesbancos', index_col=0, engine='openpyxl')
     return df_rankFM
 
 @st.cache_data()
@@ -85,8 +85,8 @@ def carregar_resultado():
     response = requests.get(url)
     conteudo_excel = response.content
     # Lê o conteúdo baixado como um arquivo Excel usando BytesIO
-    df_resultadosAnual = pd.read_excel(BytesIO(conteudo_excel), sheet_name='ResAnualBR', index_col=0, engine='openpyxl')
-    df_resultadosTrim = pd.read_excel(BytesIO(conteudo_excel), sheet_name='ResTrimBR', index_col=0, engine='openpyxl')
+    df_resultadosAnual = pd.read_excel(BytesIO(conteudo_excel), sheet_name='df_resultadoAnualBR', index_col=0, engine='openpyxl')
+    df_resultadosTrim = pd.read_excel(BytesIO(conteudo_excel), sheet_name='df_resultadoTrimBR', index_col=0, engine='openpyxl')
     return df_resultadosAnual, df_resultadosTrim
 
 @st.cache_data ()
@@ -97,7 +97,7 @@ def carregar_dataset():
     response = requests.get(url)
     conteudo_excel = response.content
     # Lê o conteúdo baixado como um arquivo Excel usando BytesIO
-    df_dataset = pd.read_excel(BytesIO(conteudo_excel), sheet_name='DataSet', index_col=0, engine='openpyxl')
+    df_dataset = pd.read_excel(BytesIO(conteudo_excel), sheet_name='CompletoBR', index_col=0, engine='openpyxl')
     # Verifique o DataFrame
     return df_dataset
 
@@ -109,7 +109,7 @@ def carregar_cotacoes():
     response = requests.get(url)
     conteudo_excel = response.content
     # Lê o conteúdo baixado como um arquivo Excel usando BytesIO
-    df_cotacoes = pd.read_excel(BytesIO(conteudo_excel), sheet_name='Cotacoes', index_col=0, engine='openpyxl')
+    df_cotacoes = pd.read_excel(BytesIO(conteudo_excel), sheet_name='cotacoesBR', index_col=0, engine='openpyxl')
     # Verifique o DataFrame
     return df_cotacoes
 
@@ -916,41 +916,40 @@ with container:
                 st.markdown(f'No momento, não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
 
     with col2:
-        # Criar o gráfico de barras horizontais Resultado Trimestral com Altair
-        res_trim['Data'] = res_trim.index.strftime('%Y-%m')
+        # Garantir que a coluna 'Data' seja datetime
+        res_trim['Data'] = pd.to_datetime(res_trim['Data'], errors='coerce')
+        #res_trim['Data'] = res_trim.index.strftime('%Y-%m')
+        
+        
+        # Renomear a coluna 'Net Income'
         res_trim.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
-
+        
+        # Criar o gráfico de barras horizontais com Altair
         chart_trim = (
             alt.Chart(res_trim)
-                .mark_bar()
-                .encode(
-                y=alt.Y('Data:O', title='', sort=alt.EncodingSortField('Data', order='ascending')),
-                x=alt.X('NetIncome:Q', title=''),
-                color=alt.condition(alt.datum.NetIncome > 0, alt.value(colorUp), alt.value(colorDown))
+            .mark_bar()
+            .encode(
+                y=alt.Y('yearquarter(Data):T', title='Trimestre', sort='ascending'),
+                x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
+                color=alt.condition(
+                    alt.datum.NetIncome > 0,
+                    alt.value(colorUp),
+                    alt.value(colorDown)
+                ),
+                facet=alt.Facet('TICKER:N', title='')  # separa por empresa
             )
-        )
-
-        # Adicionar valores das barras
-        text_trim = (
-            chart_trim.mark_text(
-                align='left',
-                baseline='middle',
-                dx=5  # Espaço para o rótulo
+            .properties(
+                title='Resultado Trimestral',
+                width=chartwidth,
+                height=chartheight
             )
-        )
-
-        # Configurações adicionais
-        chart_trim = (
-                chart_trim + text_trim
-        ).properties(
-            title='Resultado Trimestral',
-            width=chartwidth,  # Aumentar a largura do gráfico
-            height=chartheight  # Aumentar a altura do gráfico
-        ).configure_axis(
-            labelFontSize=14,  # Aumentar o tamanho da fonte do eixo
-            titleFontSize=16  # Aumentar o tamanho da fonte do título
-        ).configure_axisX(
-            labels=False  # Remover rótulos do eixo x
+            .configure_axis(
+                labelFontSize=14,
+                titleFontSize=16
+            )
+            .configure_axisX(
+                labels=False
+            )
         )
 
         # Exibir o gráfico trimestral no Streamlit
@@ -960,44 +959,48 @@ with container:
             # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
             print()
 
+        
+#######################################################################################################
+        
         # Criar o gráfico de barras horizontais Resultado Anual ===============================
-        res_anual['Data'] = res_anual.index.strftime('    --   %Y')
-        res_anual.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
-
-        chart_anual = (
-            alt.Chart(res_anual)
+        # Converter o índice para datetime (caso ainda não seja)
+            res_anual.index = pd.to_datetime(res_anual.index, errors='coerce')
+            res_anual['Data'] = res_anual.index.strftime('    --   %Y')
+            
+            # Garantir coluna de Data
+            res_anual['Data'] = res_anual.index
+            
+            # Renomear coluna de lucro
+            res_anual.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
+        
+            # Gráfico de barras verticais — um por ano
+            chart_anual = (
+                alt.Chart(res_anual)
                 .mark_bar()
                 .encode(
-                y=alt.Y('Data:O', title='', sort=alt.EncodingSortField('Data', order='ascending')),
-                x=alt.X('NetIncome:Q', title=''),
-                color=alt.condition(alt.datum.NetIncome > 0, alt.value(colorUp), alt.value(colorDown))
+                    y=alt.Y('year(Data):O', title='Ano', sort='ascending'),
+                    x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
+                    color=alt.condition(
+                        alt.datum.NetIncome > 0,
+                        alt.value(colorUp),
+                        alt.value(colorDown)
+                    ),
+                    facet=alt.Facet('TICKER:N', title='')  # opcional, separa por empresa
+                )
+                .properties(
+                    title='Resultado Anual',
+                    width=chartwidth,
+                    height=chartheight
+                )
+                .configure_axis(
+                    labelFontSize=14,
+                    titleFontSize=16
+                )
+                .configure_axisX(
+                    labels=False
+                )
             )
-        )
-
-        # Adicionar valores das barras
-        text_anual = (
-            chart_anual.mark_text(
-                align='left',
-                baseline='middle',
-                dx=10,  # Espaço para o rótulo
-                dy=0  # Ajuste vertical dos rótulos
-            )
-        )
-
-        # Configurações adicionais
-        chart_anual = (
-                chart_anual + text_anual
-        ).properties(
-            title='Resultado Anual',
-            width=chartwidth,  # Aumentar a largura do gráfico
-            height=chartheight  # Aumentar a altura do gráfico
-        ).configure_axis(
-            labelFontSize=14,  # Aumentar o tamanho da fonte do eixo
-            titleFontSize=16  # Aumentar o tamanho da fonte do título
-        ).configure_axisX(
-            labels=False  # Remover rótulos do eixo x
-        )
-
+        
         # Exibir o gráfico anual no Streamlit
         try:
             st.altair_chart(chart_anual, use_container_width=True)
