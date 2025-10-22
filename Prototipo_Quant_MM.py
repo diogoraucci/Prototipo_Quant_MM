@@ -1000,38 +1000,41 @@ with container:
                     labels=False
                 )
             )'''
-            # Converter o índice para datetime (caso ainda não seja)
+            # 1) Converter índice para datetime (se necessário)
             res_anual.index = pd.to_datetime(res_anual.index, errors='coerce')
         
-            # Garantir que a coluna Data exista e tenha o formato correto
-            # (usaremos apenas essa versão — não sobrescrever depois)
-            res_anual['Data'] = pd.to_datetime(res_anual['Data'], errors='coerce')
+            # 2) Garantir que a coluna 'Data' exista em formato datetime
+            if 'Data' in res_anual.columns:
+                res_anual['Data'] = pd.to_datetime(res_anual['Data'], errors='coerce')
+            else:
+                res_anual['Data'] = res_anual.index
         
-            # Remover linhas sem data válida
-            res_anual = res_anual.dropna(subset=['Data'])
+            # 3) Remover linhas sem data válida (evita None no Altair)
+            res_anual = res_anual.dropna(subset=['Data']).copy()
         
-            # Renomear coluna de lucro
+            # 4) Renomear coluna e garantir NetIncome numérico
             res_anual.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
-        
-            # Garantir que NetIncome é numérico
             res_anual['NetIncome'] = pd.to_numeric(res_anual['NetIncome'], errors='coerce')
+            res_anual = res_anual.dropna(subset=['NetIncome']).copy()
         
-            # Remover linhas inválidas
-            res_anual = res_anual.dropna(subset=['NetIncome'])
+            # 5) Criar coluna Ano (mais estável para ordenação/plot)
+            res_anual['Ano'] = res_anual['Data'].dt.year.astype(int)
         
-            # Gráfico de barras horizontais (Data no eixo Y, NetIncome no eixo X)
+            # 6) Construir gráfico (mesma estrutura visual que você pediu)
             chart_anual = (
                 alt.Chart(res_anual)
                 .mark_bar()
                 .encode(
-                    y=alt.Y('Data:T', title='Data', sort='ascending'),
+                    # usar 'Ano' evita problemas com year(Data) retornando None
+                    y=alt.Y('Ano:O', title='Ano', sort=alt.EncodingSortField('Ano', order='ascending')),
                     x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
                     color=alt.condition(
                         alt.datum.NetIncome > 0,
                         alt.value(colorUp),
                         alt.value(colorDown)
                     ),
-                    facet=alt.Facet('TICKER:N', title='')  # opcional, separa por empresa
+                    facet=alt.Facet('TICKER:N', title=''),
+                    tooltip=[alt.Tooltip('TICKER:N'), alt.Tooltip('Data:T', title='Data'), alt.Tooltip('NetIncome:Q', title='NetIncome')]
                 )
                 .properties(
                     title='Resultado Anual',
