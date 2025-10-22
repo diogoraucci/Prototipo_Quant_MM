@@ -58,58 +58,58 @@ chartheight = 225  # Aumentar a altura do gráfico de barras
 @st.cache_data()
 def carregar_descricao():
     # URL do arquivo Excel no GitHub
-    url = "https://raw.githubusercontent.com/diogoraucci/Prototipo_Quant_MM/main/DF_Descricao.xlsx"
+    url = "https://raw.githubusercontent.com/diogoraucci/Prototipo_Quant_MM/main/DF_FormulaMagica.xlsx"
     # Faz o download do conteúdo do arquivo
     response = requests.get(url)
     conteudo_excel = response.content
     # Lê o conteúdo baixado como um arquivo Excel usando BytesIO
-    df_descricao = pd.read_excel(BytesIO(conteudo_excel), sheet_name='DescricaoEmpresas_BR', index_col=0, engine='openpyxl')
+    df_descricao = pd.read_excel(BytesIO(conteudo_excel), sheet_name='descricaoBR', index_col=0, engine='openpyxl')
     return df_descricao
 
 @st.cache_data()
 def carregar_rankFM():
     # URL do arquivo Excel no GitHub
-    url = "https://raw.githubusercontent.com/diogoraucci/Prototipo_Quant_MM/main/DF_RankScoreFM.xlsx"
+    url = "https://raw.githubusercontent.com/diogoraucci/Prototipo_Quant_MM/main/DF_FormulaMagica.xlsx"
     # Faz o download do conteúdo do arquivo
     response = requests.get(url)
     conteudo_excel = response.content
     # Lê o conteúdo baixado como um arquivo Excel usando BytesIO
-    df_rankFM = pd.read_excel(BytesIO(conteudo_excel), sheet_name='FM_RankScore', index_col=0, engine='openpyxl')
+    df_rankFM = pd.read_excel(BytesIO(conteudo_excel), sheet_name='FM_acoesbancos', index_col=0, engine='openpyxl')
     return df_rankFM
 
 @st.cache_data()
 def carregar_resultado():
     # URL do arquivo Excel no GitHub
-    url = "https://raw.githubusercontent.com/diogoraucci/Prototipo_Quant_MM/main/DF_Resultados.xlsx"
+    url = "https://raw.githubusercontent.com/diogoraucci/Prototipo_Quant_MM/main/DF_FormulaMagica.xlsx"
     # Faz o download do conteúdo do arquivo
     response = requests.get(url)
     conteudo_excel = response.content
     # Lê o conteúdo baixado como um arquivo Excel usando BytesIO
-    df_resultadosAnual = pd.read_excel(BytesIO(conteudo_excel), sheet_name='ResAnualBR', index_col=0, engine='openpyxl')
-    df_resultadosTrim = pd.read_excel(BytesIO(conteudo_excel), sheet_name='ResTrimBR', index_col=0, engine='openpyxl')
+    df_resultadosAnual = pd.read_excel(BytesIO(conteudo_excel), sheet_name='df_resultadoAnualBR', index_col=0, engine='openpyxl')
+    df_resultadosTrim = pd.read_excel(BytesIO(conteudo_excel), sheet_name='df_resultadoTrimBR', index_col=0, engine='openpyxl')
     return df_resultadosAnual, df_resultadosTrim
 
 @st.cache_data ()
 def carregar_dataset():
     # URL do arquivo Excel no GitHub
-    url = "https://raw.githubusercontent.com/diogoraucci/Prototipo_Quant_MM/main/DF_completo.xlsx"
+    url = "https://raw.githubusercontent.com/diogoraucci/Prototipo_Quant_MM/main/DF_FormulaMagica.xlsx"
     # Faz o download do conteúdo do arquivo
     response = requests.get(url)
     conteudo_excel = response.content
     # Lê o conteúdo baixado como um arquivo Excel usando BytesIO
-    df_dataset = pd.read_excel(BytesIO(conteudo_excel), sheet_name='DataSet', index_col=0, engine='openpyxl')
+    df_dataset = pd.read_excel(BytesIO(conteudo_excel), sheet_name='CompletoBR', index_col=0, engine='openpyxl')
     # Verifique o DataFrame
     return df_dataset
 
 @st.cache_data ()
 def carregar_cotacoes():
      # URL do arquivo Excel no GitHub
-    url = "https://raw.githubusercontent.com/diogoraucci/Prototipo_Quant_MM/main/DF_completo.xlsx"
+    url = "https://raw.githubusercontent.com/diogoraucci/Prototipo_Quant_MM/main/DF_FormulaMagica.xlsx"
     # Faz o download do conteúdo do arquivo
     response = requests.get(url)
     conteudo_excel = response.content
     # Lê o conteúdo baixado como um arquivo Excel usando BytesIO
-    df_cotacoes = pd.read_excel(BytesIO(conteudo_excel), sheet_name='Cotacoes', index_col=0, engine='openpyxl')
+    df_cotacoes = pd.read_excel(BytesIO(conteudo_excel), sheet_name='cotacoesBR', index_col=0, engine='openpyxl')
     # Verifique o DataFrame
     return df_cotacoes
 
