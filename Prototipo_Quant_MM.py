@@ -964,7 +964,7 @@ with container:
         
         # Criar o gráfico de barras horizontais Resultado Anual ===============================
         # Converter o índice para datetime (caso ainda não seja)
-            '''res_anual.index = pd.to_datetime(res_anual.index, errors='coerce')
+            res_anual.index = pd.to_datetime(res_anual.index, errors='coerce')
             res_anual['Data'] = res_anual.index.strftime('    --   %Y')
             
             # Garantir coluna de Data
@@ -999,56 +999,8 @@ with container:
                 .configure_axisX(
                     labels=False
                 )
-            )'''
-            # 1) Converter índice para datetime (se necessário)
-            res_anual.index = pd.to_datetime(res_anual.index, errors='coerce')
-        
-            # 2) Garantir que a coluna 'Data' exista em formato datetime
-            if 'Data' in res_anual.columns:
-                res_anual['Data'] = pd.to_datetime(res_anual['Data'], errors='coerce')
-            else:
-                res_anual['Data'] = res_anual.index
-        
-            # 3) Remover linhas sem data válida (evita None no Altair)
-            res_anual = res_anual.dropna(subset=['Data']).copy()
-        
-            # 4) Renomear coluna e garantir NetIncome numérico
-            res_anual.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
-            res_anual['NetIncome'] = pd.to_numeric(res_anual['NetIncome'], errors='coerce')
-            res_anual = res_anual.dropna(subset=['NetIncome']).copy()
-        
-            # 5) Criar coluna Ano (mais estável para ordenação/plot)
-            res_anual['Ano'] = res_anual['Data'].dt.year.astype(int)
-        
-            # 6) Construir gráfico (mesma estrutura visual que você pediu)
-            chart_anual = (
-                alt.Chart(res_anual)
-                .mark_bar()
-                .encode(
-                    # usar 'Ano' evita problemas com year(Data) retornando None
-                    y=alt.Y('Ano:O', title='Ano', sort=alt.EncodingSortField('Ano', order='ascending')),
-                    x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
-                    color=alt.condition(
-                        alt.datum.NetIncome > 0,
-                        alt.value(colorUp),
-                        alt.value(colorDown)
-                    ),
-                    facet=alt.Facet('TICKER:N', title=''),
-                    tooltip=[alt.Tooltip('TICKER:N'), alt.Tooltip('Data:T', title='Data'), alt.Tooltip('NetIncome:Q', title='NetIncome')]
-                )
-                .properties(
-                    title='Resultado Anual',
-                    width=chartwidth,
-                    height=chartheight
-                )
-                .configure_axis(
-                    labelFontSize=14,
-                    titleFontSize=16
-                )
-                .configure_axisX(
-                    labels=False
-                )
             )
+        
         # Exibir o gráfico anual no Streamlit
         try:
             st.altair_chart(chart_anual, use_container_width=True)
