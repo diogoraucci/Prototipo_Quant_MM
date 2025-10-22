@@ -916,44 +916,45 @@ with container:
                 st.markdown(f'No momento, não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
 
     with col2:
-        # Garantir que a coluna 'Data' seja datetime
-        res_trim['Data'] = pd.to_datetime(res_trim['Data'], errors='coerce')
+        # --- Preparação segura dos dados ---
+        res_trim['Data'] = pd.to_datetime(res_trim['Data'], errors='coerce')        # datetime
+        res_trim = res_trim.dropna(subset=['Data']).copy()                         # remover NaT
         
-        # Remover linhas inválidas (NaT)
-        res_trim = res_trim.dropna(subset=['Data']).copy()
+        # criar coluna de string com formato yyyy-mm-dd para exibição no eixo Y
+        res_trim['DataStr'] = res_trim['Data'].dt.strftime('%Y-%m-%d')
         
-        # Renomear a coluna 'Net Income'
+        # renomear e garantir tipo numérico em NetIncome
         res_trim.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
-        
-        # Garantir que NetIncome seja numérico
         res_trim['NetIncome'] = pd.to_numeric(res_trim['NetIncome'], errors='coerce')
         res_trim = res_trim.dropna(subset=['NetIncome']).copy()
         
-        # Criar o gráfico de barras horizontais com Altair (mantendo sua estrutura)
+        # --- Gráfico: barras horizontais, DataStr no eixo Y, NetIncome no X ---
         chart_trim = (
             alt.Chart(res_trim)
             .mark_bar()
             .encode(
-                y=alt.Y('Data:T', title='Data', sort=alt.EncodingSortField('Data', order='ascending')),
+                # usar a string para mostrar exatamente YYYY-MM-DD, ordenar pelo campo datetime 'Data'
+                y=alt.Y(
+                    'DataStr:O',
+                    title='Data',
+                    sort=alt.EncodingSortField(field='Data', order='ascending')
+                ),
                 x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
                 color=alt.condition(
                     alt.datum.NetIncome > 0,
                     alt.value(colorUp),
                     alt.value(colorDown)
                 ),
-                facet=alt.Facet('TICKER:N', title='')  # separa por empresa
+                facet=alt.Facet('TICKER:N', title='')  # separa por empresa; remova se quiser tudo junto
             )
             .properties(
                 title='Resultado Trimestral',
                 width=chartwidth,
                 height=chartheight
             )
-            .configure_axis(
-                labelFontSize=14,
-                titleFontSize=16
-            )
-            .configure_axisX(
-                labels=False
+            .configure_axis(        # ajustar fontes/ângulos se quiser
+                labelFontSize=12,
+                titleFontSize=14
             )
         )
 
