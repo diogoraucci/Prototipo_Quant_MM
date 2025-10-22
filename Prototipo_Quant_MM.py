@@ -969,43 +969,46 @@ with container:
 #######################################################################################################
         
         # Criar o gráfico de barras horizontais Resultado Anual ===============================
-        # Converter o índice para datetime (caso ainda não seja)
-            res_anual.index = pd.to_datetime(res_anual.index, errors='coerce')
-            res_anual['Data'] = res_anual.index.strftime('    --   %Y')
-            
-            # Garantir coluna de Data
-            res_anual['Data'] = res_anual.index
-            
-            # Renomear coluna de lucro
-            res_anual.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
+        # --- Preparação dos dados ---
+        res_anual['Data'] = pd.to_datetime(res_anual['Data'], errors='coerce')
+        res_anual = res_anual.dropna(subset=['Data']).copy()
         
-            # Gráfico de barras verticais — um por ano
-            chart_anual = (
-                alt.Chart(res_anual)
-                .mark_bar()
-                .encode(
-                    y=alt.Y('year(Data):O', title='Ano', sort='ascending'),
-                    x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
-                    color=alt.condition(
-                        alt.datum.NetIncome > 0,
-                        alt.value(colorUp),
-                        alt.value(colorDown)
-                    ),
-                    facet=alt.Facet('TICKER:N', title='')  # opcional, separa por empresa
-                )
-                .properties(
-                    title='Resultado Anual',
-                    width=chartwidth,
-                    height=chartheight
-                )
-                .configure_axis(
-                    labelFontSize=14,
-                    titleFontSize=16
-                )
-                .configure_axisX(
-                    labels=False
-                )
+        # Criar coluna string para exibir exatamente como no dataset (ou só o ano, se preferir)
+        res_anual['DataStr'] = res_anual['Data'].dt.strftime('%Y-%m-%d')
+        
+        # Renomear e garantir tipo numérico
+        res_anual.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
+        res_anual['NetIncome'] = pd.to_numeric(res_anual['NetIncome'], errors='coerce')
+        res_anual = res_anual.dropna(subset=['NetIncome']).copy()
+        
+        # --- Gráfico: barras horizontais, DataStr no eixo Y, NetIncome no eixo X ---
+        chart_anual = (
+            alt.Chart(res_anual)
+            .mark_bar()
+            .encode(
+                y=alt.Y(
+                    'DataStr:O',
+                    title='Data',
+                    sort=alt.EncodingSortField(field='Data', order='ascending')
+                ),
+                x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
+                color=alt.condition(
+                    alt.datum.NetIncome > 0,
+                    alt.value(colorUp),
+                    alt.value(colorDown)
+                ),
+                facet=alt.Facet('TICKER:N', title='')  # separa por empresa
             )
+            .properties(
+                title='Resultado Anual',
+                width=chartwidth,
+                height=chartheight
+            )
+            .configure_axis(
+                labelFontSize=14,
+                titleFontSize=16
+            )
+        )
         
         # Exibir o gráfico anual no Streamlit
         try:
