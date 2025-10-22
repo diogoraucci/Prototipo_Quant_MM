@@ -915,14 +915,11 @@ with container:
             except:
                 st.markdown(f'No momento, não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
 
-    with col2:
+'''    with col2:
         # Criar o gráfico de barras horizontais Resultado Trimestral com Altair
         #res_trim['Data'] = res_trim.index.strftime('%Y-%m')
         res_trim.index = pd.to_datetime(res_trim.index, errors='coerce')
         res_trim['Data'] = res_trim.index.strftime('%Y-%m')
-
-
-
         
         res_trim.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
 
@@ -964,8 +961,47 @@ with container:
             st.altair_chart(chart_trim, use_container_width=True)
         except:
             # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
-            print()
+            print()'''
+        with col2:
+            # Garantir que a coluna 'Data' seja datetime
+            res_trim['Data'] = pd.to_datetime(res_trim['Data'], errors='coerce')
+            
+            # Renomear a coluna 'Net Income'
+            res_trim.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
+            
+            # Criar o gráfico de barras horizontais com Altair
+            chart_trim = (
+                alt.Chart(res_trim)
+                .mark_bar()
+                .encode(
+                    y=alt.Y('yearquarter(Data):T', title='Trimestre', sort='ascending'),
+                    x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
+                    color=alt.condition(
+                        alt.datum.NetIncome > 0,
+                        alt.value(colorUp),
+                        alt.value(colorDown)
+                    ),
+                    facet=alt.Facet('TICKER:N', title='')  # separa por empresa
+                )
+                .properties(
+                    title='Resultado Trimestral',
+                    width=chartwidth,
+                    height=chartheight
+                )
+                .configure_axis(
+                    labelFontSize=14,
+                    titleFontSize=16
+                )
+                .configure_axisX(
+                    labels=False
+                )
+            )
+        
+            # Exibir o gráfico
+            st.altair_chart(chart_trim, use_container_width=True)
 
+
+    
         # Criar o gráfico de barras horizontais Resultado Anual ===============================
         res_anual.index = pd.to_datetime(res_anual.index, errors='coerce')
         res_anual['Data'] = res_anual.index.strftime('    --   %Y')
