@@ -964,7 +964,7 @@ with container:
         
         # Criar o gráfico de barras horizontais Resultado Anual ===============================
         # Converter o índice para datetime (caso ainda não seja)
-            res_anual.index = pd.to_datetime(res_anual.index, errors='coerce')
+            '''res_anual.index = pd.to_datetime(res_anual.index, errors='coerce')
             res_anual['Data'] = res_anual.index.strftime('    --   %Y')
             
             # Garantir coluna de Data
@@ -999,8 +999,53 @@ with container:
                 .configure_axisX(
                     labels=False
                 )
+            )'''
+            # Converter o índice para datetime (caso ainda não seja)
+            res_anual.index = pd.to_datetime(res_anual.index, errors='coerce')
+        
+            # Garantir que a coluna Data exista e tenha o formato correto
+            # (usaremos apenas essa versão — não sobrescrever depois)
+            res_anual['Data'] = pd.to_datetime(res_anual['Data'], errors='coerce')
+        
+            # Remover linhas sem data válida
+            res_anual = res_anual.dropna(subset=['Data'])
+        
+            # Renomear coluna de lucro
+            res_anual.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
+        
+            # Garantir que NetIncome é numérico
+            res_anual['NetIncome'] = pd.to_numeric(res_anual['NetIncome'], errors='coerce')
+        
+            # Remover linhas inválidas
+            res_anual = res_anual.dropna(subset=['NetIncome'])
+        
+            # Gráfico de barras horizontais (Data no eixo Y, NetIncome no eixo X)
+            chart_anual = (
+                alt.Chart(res_anual)
+                .mark_bar()
+                .encode(
+                    y=alt.Y('Data:T', title='Data', sort='ascending'),
+                    x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
+                    color=alt.condition(
+                        alt.datum.NetIncome > 0,
+                        alt.value(colorUp),
+                        alt.value(colorDown)
+                    ),
+                    facet=alt.Facet('TICKER:N', title='')  # opcional, separa por empresa
+                )
+                .properties(
+                    title='Resultado Anual',
+                    width=chartwidth,
+                    height=chartheight
+                )
+                .configure_axis(
+                    labelFontSize=14,
+                    titleFontSize=16
+                )
+                .configure_axisX(
+                    labels=False
+                )
             )
-
         # Exibir o gráfico anual no Streamlit
         try:
             st.altair_chart(chart_anual, use_container_width=True)
