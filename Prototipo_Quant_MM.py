@@ -918,6 +918,8 @@ with container:
     with col2:
         # Garantir que a coluna 'Data' seja datetime
         res_trim['Data'] = pd.to_datetime(res_trim['Data'], errors='coerce')
+        res_trim['Data'] = res_trim.index.strftime('%Y-%m')
+        
         
         # Renomear a coluna 'Net Income'
         res_trim.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
