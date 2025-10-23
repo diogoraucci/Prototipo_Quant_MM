@@ -916,119 +916,83 @@ with container:
                 st.markdown(f'No momento, não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
 
     with col2:
-        # --- Preparação segura dos dados ---
-        res_trim['Data'] = pd.to_datetime(res_trim['Data'], errors='coerce')        # datetime
-        res_trim = res_trim.dropna(subset=['Data']).copy()                         # remover NaT
-        
-        # criar coluna de string com formato yyyy-mm-dd para exibição no eixo Y
-        res_trim['DataStr'] = res_trim['Data'].dt.strftime('%Y-%m-%d')
-        
-        # renomear e garantir tipo numérico em NetIncome
-        res_trim.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
-        res_trim['NetIncome'] = pd.to_numeric(res_trim['NetIncome'], errors='coerce')
-        res_trim = res_trim.dropna(subset=['NetIncome']).copy()
-        
-        # --- Gráfico: barras horizontais, DataStr no eixo Y, NetIncome no X ---
-        chart_trim = (
-            alt.Chart(res_trim)
-            .mark_bar()
-            .encode(
-                # usar a string para mostrar exatamente YYYY-MM-DD, ordenar pelo campo datetime 'Data'
-                y=alt.Y(
-                    'DataStr:O',
-                    title='Data',
-                    sort=alt.EncodingSortField(field='Data', order='ascending')
-                ),
-                x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
-                color=alt.condition(
-                    alt.datum.NetIncome > 0,
-                    alt.value(colorUp),
-                    alt.value(colorDown)
-                ),
-                facet=alt.Facet('TICKER:N', title='')  # separa por empresa; remova se quiser tudo junto
-            )
-            .properties(
-                title='Resultado Trimestral',
-                width=chartwidth,
-                height=chartheight
-            )
-            .configure_axis(        # ajustar fontes/ângulos se quiser
-                labelFontSize=12,
-                titleFontSize=14
-            )
-        )
-
-        # Exibir o gráfico trimestral no Streamlit
+        # --- Descrição da Empresa (moved to top for prominence) ---
+        with st.expander(f"Descrição da Empresa ({select_tickers})", expanded=True):
+            try:
+                descricao = df_descricao.at[select_tickers, 'Descricao']
+                st.markdown(descricao)
+            except Exception as e:
+                st.markdown(f"**Erro**: Descrição indisponível para {select_tickers}: {e}")
+                print(f"Erro ao carregar descrição para {select_tickers}: {e}")
+    
+        # --- Preparação segura dos dados (Trimestral) ---
         try:
-            st.altair_chart(chart_trim, use_container_width=True)
-        except:
-            # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
-            print()
-
-        
-#######################################################################################################
-        
-        # Criar o gráfico de barras horizontais Resultado Anual ===============================
-        # Converter o índice para datetime (caso ainda não seja)
-        # --- Preparação dos dados ---
-        res_anual['Data'] = pd.to_datetime(res_anual['Data'], errors='coerce')
-        res_anual = res_anual.dropna(subset=['Data']).copy()
-        
-        # Criar coluna string para exibir exatamente como no dataset (ou só o ano, se preferir)
-        res_anual['DataStr'] = res_anual['Data'].dt.strftime('%Y-%m-%d')
-        
-        # Renomear e garantir tipo numérico
-        res_anual.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
-        res_anual['NetIncome'] = pd.to_numeric(res_anual['NetIncome'], errors='coerce')
-        res_anual = res_anual.dropna(subset=['NetIncome']).copy()
-        
-        # --- Gráfico: barras horizontais, DataStr no eixo Y, NetIncome no eixo X ---
-        chart_anual = (
-            alt.Chart(res_anual)
-            .mark_bar()
-            .encode(
-                y=alt.Y(
-                    'DataStr:O',
-                    title='Data',
-                    sort=alt.EncodingSortField(field='Data', order='ascending')
-                ),
-                x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
-                color=alt.condition(
-                    alt.datum.NetIncome > 0,
-                    alt.value(colorUp),
-                    alt.value(colorDown)
-                ),
-                facet=alt.Facet('TICKER:N', title='')  # separa por empresa
+            res_trim['Data'] = pd.to_datetime(res_trim['Data'], errors='coerce')
+            res_trim = res_trim.dropna(subset=['Data']).copy()
+            res_trim['DataStr'] = res_trim['Data'].dt.strftime('%Y-%m-%d')
+            res_trim.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
+            res_trim['NetIncome'] = pd.to_numeric(res_trim['NetIncome'], errors='coerce')
+            res_trim = res_trim.dropna(subset=['NetIncome']).copy()
+            
+            # --- Gráfico Trimestral ---
+            chartwidth = 300  # Reduced from 800
+            chartheight = 200  # Adjusted for proportionality
+            chart_trim = (
+                alt.Chart(res_trim)
+                .mark_bar()
+                .encode(
+                    y=alt.Y('DataStr:O', title='Data', sort=alt.EncodingSortField(field='Data', order='ascending')),
+                    x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
+                    color=alt.condition(alt.datum.NetIncome > 0, alt.value(colorUp), alt.value(colorDown)),
+                    facet=alt.Facet('TICKER:N', title='')
+                )
+                .properties(
+                    title='Resultado Trimestral',
+                    width=chartwidth,
+                    height=chartheight
+                )
+                .configure_axis(labelFontSize=12, titleFontSize=14)
             )
-            .properties(
-                title='Resultado Anual',
-                width=chartwidth,
-                height=chartheight
-            )
-            .configure_axis(
-                labelFontSize=14,
-                titleFontSize=16
-            )
-        )
-        
-        # Exibir o gráfico anual no Streamlit
-        try:
-            st.altair_chart(chart_anual, use_container_width=True)
-            print('Dados Indisponíveis')
-
-            # Grafico de Volatildiade
-            chart_vol(select_tickers)
-
-            # Descrição ========================================================================
-            descricao = df_descricao.at[select_tickers, 'Descricao']
-            print('Dados Indisponíveis')
-        except:
-            # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
-            print('falhou')
-
-        try:
-            descricao = df_descricao.at[select_tickers, 'Descricao']
-            st.markdown(f"**Descrição da Empresa ({select_tickers})**:\n\n{descricao}")
+            st.altair_chart(chart_trim)  # Removed use_container_width=True
         except Exception as e:
-            st.markdown(f"Descrição indisponível para {select_tickers}: {e}")
+            st.markdown(f"**Erro**: Falha ao exibir gráfico trimestral para {select_tickers}: {e}")
+            print(f"Erro no gráfico trimestral: {e}")
+    
+        # --- Preparação segura dos dados (Anual) ---
+        try:
+            res_anual['Data'] = pd.to_datetime(res_anual['Data'], errors='coerce')
+            res_anual = res_anual.dropna(subset=['Data']).copy()
+            res_anual['DataStr'] = res_anual['Data'].dt.strftime('%Y-%m-%d')
+            res_anual.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
+            res_anual['NetIncome'] = pd.to_numeric(res_anual['NetIncome'], errors='coerce')
+            res_anual = res_anual.dropna(subset=['NetIncome']).copy()
+            
+            # --- Gráfico Anual ---
+            chart_anual = (
+                alt.Chart(res_anual)
+                .mark_bar()
+                .encode(
+                    y=alt.Y('DataStr:O', title='Data', sort=alt.EncodingSortField(field='Data', order='ascending')),
+                    x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
+                    color=alt.condition(alt.datum.NetIncome > 0, alt.value(colorUp), alt.value(colorDown)),
+                    facet=alt.Facet('TICKER:N', title='')
+                )
+                .properties(
+                    title='Resultado Anual',
+                    width=chartwidth,
+                    height=chartheight
+                )
+                .configure_axis(labelFontSize=14, titleFontSize=16)
+            )
+            st.altair_chart(chart_anual)  # Removed use_container_width=True
+        except Exception as e:
+            st.markdown(f"**Erro**: Falha ao exibir gráfico anual para {select_tickers}: {e}")
+            print(f"Erro no gráfico anual: {e}")
+    
+        # --- Gráfico de Volatilidade ---
+        try:
+            chart_vol(select_tickers)
+        except Exception as e:
+            st.markdown(f"**Erro**: Falha ao exibir gráfico de volatilidade para {select_tickers}: {e}")
+            print(f"Erro no gráfico de volatilidade: {e}")
 
