@@ -1027,9 +1027,8 @@ with container:
             print('falhou')
 
         try:
-            alturaTextBox = 200
-            st.text_area("Descrição da Empresa", value=descricao, height=alturaTextBox, max_chars=None)
-        except:
-            # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
-            print('falhou2')
+            descricao = df_descricao.at[select_tickers, 'Descricao']
+            st.markdown(f"**Descrição da Empresa ({select_tickers})**:\n\n{descricao}")
+        except Exception as e:
+            st.markdown(f"Descrição indisponível para {select_tickers}: {e}")
 
