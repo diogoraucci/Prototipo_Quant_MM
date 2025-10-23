@@ -1032,3 +1032,12 @@ with container:
         except:
             # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
             print('falhou2')
+
+
+
+    with col2:
+        try:
+            descricao = df_descricao.at[select_tickers, 'Descricao']
+            st.markdown(f"**Descrição da Empresa ({select_tickers})**:\n\n{descricao}")
+        except Exception as e:
+            st.markdown(f"Descrição indisponível para {select_tickers}: {e}")
