@@ -1013,31 +1013,11 @@ with container:
         
         # Exibir o gráfico anual no Streamlit
         try:
-            st.altair_chart(chart_anual, use_container_width=True)
-            print('Dados Indisponíveis')
-
-            # Grafico de Volatildiade
-            chart_vol(select_tickers)
-
-            # Descrição ========================================================================
-            descricao = df_descricao.at[select_tickers, 'Descricao']
-            print('Dados Indisponíveis')
-        except:
-            # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
-            print('falhou')
-
-        try:
-            alturaTextBox = 200
-            st.text_area("Descrição da Empresa", value=descricao, height=alturaTextBox, max_chars=None)
-        except:
-            # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
-            print('falhou2')
-
-
-
-
-        try:
             descricao = df_descricao.at[select_tickers, 'Descricao']
             st.markdown(f"**Descrição da Empresa ({select_tickers})**:\n\n{descricao}")
         except Exception as e:
             st.markdown(f"Descrição indisponível para {select_tickers}: {e}")
+
+
+
+
