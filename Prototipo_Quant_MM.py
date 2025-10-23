@@ -896,7 +896,7 @@ res_trim = df_resultadosTrim[df_resultadosTrim['TICKER'] == select_tickers ]
 res_anual = df_resultadosAnual[df_resultadosAnual['TICKER'] == select_tickers ]
 
 with container:
-    col1, col2 = st.columns([8, 2])
+    col1, col2 = st.columns([6, 2])
 
     # Gráfico de linhas na coluna 1
     with col1:
@@ -915,24 +915,15 @@ with container:
             except:
                 st.markdown(f'No momento, não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
 
-    # Assuming these variables are defined elsewhere; adjust as needed
-    chartwidth = 300  # Reduced from assumed 600 to make charts narrower
-    chartheight = 400  # Kept proportional; adjust if needed
-    colorUp = 'green'  # Color for positive NetIncome
-    colorDown = 'red'  # Color for negative NetIncome
-    
-    # Assuming col2 is a Streamlit column; adjust context if needed
-    col2 = st.columns(1)[0]  # Single column for simplicity; modify if using multiple columns
-    
     with col2:
-        # --- Preparação segura dos dados (Trimestral) ---
-        res_trim['Data'] = pd.to_datetime(res_trim['Data'], errors='coerce')  # datetime
-        res_trim = res_trim.dropna(subset=['Data']).copy()  # remover NaT
+        # --- Preparação segura dos dados ---
+        res_trim['Data'] = pd.to_datetime(res_trim['Data'], errors='coerce')        # datetime
+        res_trim = res_trim.dropna(subset=['Data']).copy()                         # remover NaT
         
-        # Criar coluna de string com formato yyyy-mm-dd para exibição no eixo Y
+        # criar coluna de string com formato yyyy-mm-dd para exibição no eixo Y
         res_trim['DataStr'] = res_trim['Data'].dt.strftime('%Y-%m-%d')
         
-        # Renomear e garantir tipo numérico em NetIncome
+        # renomear e garantir tipo numérico em NetIncome
         res_trim.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
         res_trim['NetIncome'] = pd.to_numeric(res_trim['NetIncome'], errors='coerce')
         res_trim = res_trim.dropna(subset=['NetIncome']).copy()
@@ -942,7 +933,7 @@ with container:
             alt.Chart(res_trim)
             .mark_bar()
             .encode(
-                # Usar a string para mostrar exatamente YYYY-MM-DD, ordenar pelo campo datetime 'Data'
+                # usar a string para mostrar exatamente YYYY-MM-DD, ordenar pelo campo datetime 'Data'
                 y=alt.Y(
                     'DataStr:O',
                     title='Data',
@@ -954,85 +945,86 @@ with container:
                     alt.value(colorUp),
                     alt.value(colorDown)
                 ),
-                facet=alt.Facet('TICKER:N', title='')  # Separa por empresa
+                facet=alt.Facet('TICKER:N', title='')  # separa por empresa; remova se quiser tudo junto
             )
             .properties(
                 title='Resultado Trimestral',
-                width=chartwidth,  # Reduced width
+                width=chartwidth,
                 height=chartheight
             )
-            .configure_axis(
+            .configure_axis(        # ajustar fontes/ângulos se quiser
                 labelFontSize=12,
                 titleFontSize=14
             )
         )
-    
+
         # Exibir o gráfico trimestral no Streamlit
         try:
-            st.altair_chart(chart_trim)  # Removed use_container_width=True
-        except Exception as e:
-            st.markdown(f'Erro ao exibir o gráfico trimestral: {e}')
-    
-    # Criar o gráfico de barras horizontais Resultado Anual ===============================
-    # --- Preparação dos dados ---
-    res_anual['Data'] = pd.to_datetime(res_anual['Data'], errors='coerce')
-    res_anual = res_anual.dropna(subset=['Data']).copy()
-    
-    # Criar coluna string para exibir exatamente como no dataset
-    res_anual['DataStr'] = res_anual['Data'].dt.strftime('%Y-%m-%d')
-    
-    # Renomear e garantir tipo numérico
-    res_anual.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
-    res_anual['NetIncome'] = pd.to_numeric(res_anual['NetIncome'], errors='coerce')
-    res_anual = res_anual.dropna(subset=['NetIncome']).copy()
-    
-    # --- Gráfico: barras horizontais, DataStr no eixo Y, NetIncome no eixo X ---
-    chart_anual = (
-        alt.Chart(res_anual)
-        .mark_bar()
-        .encode(
-            y=alt.Y(
-                'DataStr:O',
-                title='Data',
-                sort=alt.EncodingSortField(field='Data', order='ascending')
-            ),
-            x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
-            color=alt.condition(
-                alt.datum.NetIncome > 0,
-                alt.value(colorUp),
-                alt.value(colorDown)
-            ),
-            facet=alt.Facet('TICKER:N', title='')  # Separa por empresa
-        )
-        .properties(
-            title='Resultado Anual',
-            width=chartwidth,  # Reduced width
-            height=chartheight
-        )
-        .configure_axis(
-            labelFontSize=14,
-            titleFontSize=16
-        )
-    )
+            st.altair_chart(chart_trim, use_container_width=True)
+        except:
+            # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
+            print()
+
         
-    # Exibir o gráfico anual no Streamlit
-    try:
-        st.altair_chart(chart_anual, use_container_width=True)
-        print('Dados Indisponíveis')
+#######################################################################################################
+        
+        # Criar o gráfico de barras horizontais Resultado Anual ===============================
+        # Converter o índice para datetime (caso ainda não seja)
+            res_anual.index = pd.to_datetime(res_anual.index, errors='coerce')
+            res_anual['Data'] = res_anual.index.strftime('    --   %Y')
+            
+            # Garantir coluna de Data
+            res_anual['Data'] = res_anual.index
+            
+            # Renomear coluna de lucro
+            res_anual.rename(columns={'Net Income': 'NetIncome'}, inplace=True)
+        
+            # Gráfico de barras verticais — um por ano
+            chart_anual = (
+                alt.Chart(res_anual)
+                .mark_bar()
+                .encode(
+                    y=alt.Y('year(Data):O', title='Ano', sort='ascending'),
+                    x=alt.X('NetIncome:Q', title='Lucro Líquido (R$)'),
+                    color=alt.condition(
+                        alt.datum.NetIncome > 0,
+                        alt.value(colorUp),
+                        alt.value(colorDown)
+                    ),
+                    facet=alt.Facet('TICKER:N', title='')  # opcional, separa por empresa
+                )
+                .properties(
+                    title='Resultado Anual',
+                    width=chartwidth,
+                    height=chartheight
+                )
+                .configure_axis(
+                    labelFontSize=14,
+                    titleFontSize=16
+                )
+                .configure_axisX(
+                    labels=False
+                )
+            )
+        
+        # Exibir o gráfico anual no Streamlit
+        try:
+            st.altair_chart(chart_anual, use_container_width=True)
+            print('Dados Indisponíveis')
 
-        # Grafico de Volatildiade
-        chart_vol(select_tickers)
+            # Grafico de Volatildiade
+            chart_vol(select_tickers)
 
-        # Descrição ========================================================================
-        descricao = df_descricao.at[select_tickers, 'Descricao']
-        print('Dados Indisponíveis')
-    except:
-        # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
-        print()
+            # Descrição ========================================================================
+            descricao = df_descricao.at[select_tickers, 'Descricao']
+            print('Dados Indisponíveis')
+        except:
+            # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
+            print()
 
-    try:
-        alturaTextBox = 200
-        st.text_area("Descrição da Empresa", value=descricao, height=alturaTextBox, max_chars=None)
-    except:
-        # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
-        None
+        try:
+            alturaTextBox = 200
+            st.text_area("Descrição da Empresa", value=descricao, height=alturaTextBox, max_chars=None)
+        except:
+            # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
+            None
