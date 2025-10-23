@@ -1024,11 +1024,11 @@ with container:
             print('Dados Indisponíveis')
         except:
             # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
-            print()
+            print('falhou')
 
         try:
             alturaTextBox = 200
             st.text_area("Descrição da Empresa", value=descricao, height=alturaTextBox, max_chars=None)
         except:
             # st.markdown(f'Não há nenhuma oportunidade no Perfil De Risco {select_PerfilRisco}')
-            None
+            print('falhou2')
