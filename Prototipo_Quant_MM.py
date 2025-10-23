@@ -51,7 +51,7 @@ dotColor3 = '#FFB266'
 colorUp = lineColor
 colorDown = '#CC0066'
 
-chartwidth  = 800  # Aumentar a largura do gráfico de barras
+chartwidth  = 600  # Aumentar a largura do gráfico de barras
 chartheight = 225  # Aumentar a altura do gráfico de barras
 
 # Definir Funçoes =====================================
