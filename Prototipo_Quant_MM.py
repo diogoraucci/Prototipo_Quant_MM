@@ -1035,7 +1035,7 @@ with container:
 
 
 
-    with col2:
+
         try:
             descricao = df_descricao.at[select_tickers, 'Descricao']
             st.markdown(f"**Descrição da Empresa ({select_tickers})**:\n\n{descricao}")
