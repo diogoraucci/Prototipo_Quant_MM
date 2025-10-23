@@ -681,12 +681,12 @@ teteData = pd.DataFrame([[dataControl.iat[0, 0]]], columns=['0'])
 
 
 
-url2 = "https://raw.githubusercontent.com/diogoraucci/Prototipo_Quant_MM/main/DF_completo.xlsx"
+url2 = "https://raw.githubusercontent.com/diogoraucci/Prototipo_Quant_MM/main/DF_FormulaMagica.xlsx"
 # Faz o download do conteúdo do arquivo
 response = requests.get(url2)
 conteudo_excel = response.content
 # Lê o conteúdo baixado como um arquivo Excel usando BytesIO
-df_cotacoes2 = pd.read_excel(BytesIO(conteudo_excel), sheet_name='Cotacoes', index_col=0, engine='openpyxl')
+df_cotacoes2 = pd.read_excel(BytesIO(conteudo_excel), sheet_name='cotacoesBR', index_col=0, engine='openpyxl')
 df_cotacoes2 = pd.DataFrame(df_cotacoes2)
 #df_cotacoes2 = df_cotacoes2.index[-1]
 
