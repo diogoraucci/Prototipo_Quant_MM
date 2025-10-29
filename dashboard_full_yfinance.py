@@ -71,15 +71,24 @@ def coletar_dados(ticker):
             progress=False,
             auto_adjust=False
         )
+
         if raw.empty:
             st.error("Nenhuma cotação encontrada.")
             st.stop()
 
-        # ACESSO SEGURO À COLUNA 'Close'
-        if isinstance(raw.columns, pd.MultiIndex):
-            df_cot = raw.xs('Close', axis=1, level=0).to_frame(name='Close')
+        # EXTRAI 'Close' DE FORMA ROBUSTA
+        if 'Close' in raw.columns:
+            close_series = raw['Close']
+        elif isinstance(raw.columns, pd.MultiIndex):
+            try:
+                close_series = raw[('Close', ticker)]
+            except:
+                close_series = raw['Close'].iloc[:, 0]
         else:
-            df_cot = raw[['Close']].copy()
+            close_series = raw.iloc[:, 0]
+
+        close_series.name = 'Close'
+        df_cot = close_series.to_frame()
 
         df_cot['mm'] = df_cot['Close'].rolling(60).mean()
         df_cot.dropna(inplace=True)
@@ -118,7 +127,7 @@ fig_trim.add_trace(go.Bar(
 ))
 fig_trim.update_layout(
     title="Lucro Líquido Trimestral",
-    xaxis=dict(range=[0, df_trim["Lucro_Milhoes"].max() * 1.3], showgrid=False),
+    xaxis=dict(range=[0, df_trim["Lucro_Milhoes"].max() * 1.3], showOAc=True),
     yaxis=dict(showgrid=False),
     plot_bgcolor="#1a1a1a", paper_bgcolor="#1a1a1a", font_color="white",
     margin=dict(l=100, r=100, t=60, b=40), height=180
