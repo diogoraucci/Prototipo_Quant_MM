@@ -14,21 +14,13 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Tema escuro via CSS
 st.markdown("""
 <style>
-    .stApp {
-        background-color: #1a1a1a;
-        color: white;
-    }
+    .stApp { background-color: #1a1a1a; color: white; }
     h2 { color: #00cc96; text-align: center; margin: 10px 0; }
     .stTextInput > div > div > input {
-        background-color: #2d2d2d;
-        color: white;
-        border-radius: 8px;
-        border: 1px solid #444;
+        background-color: #2d2d2d; color: white; border-radius: 8px; border: 1px solid #444;
     }
-    .plotly-graph-div { background-color: #1a1a1a !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -36,68 +28,67 @@ st.markdown("""
 # ENTRADA DO TICKER
 # ========================================
 ticker = st.text_input("Digite o ticker (ex: SO, AAPL, PETR4.SA)", value="SO").upper().strip()
-
 if not ticker:
     st.stop()
 
 # ========================================
-# FUNÇÃO: COLETAR TODOS OS DADOS
+# FUNÇÃO: COLETAR DADOS
 # ========================================
 @st.cache_data(ttl=3600)
 def coletar_dados(ticker):
     try:
         yf_ticker = yf.Ticker(ticker)
 
-        # --- RESULTADOS ANUAIS ---
+        # --- ANUAIS ---
         dados_anuais = []
         df_anual_raw = yf_ticker.financials
         if 'Net Income' in df_anual_raw.index:
-            net_income = df_anual_raw.loc['Net Income'].dropna()
-            for data, valor in net_income.items():
+            for data, valor in df_anual_raw.loc['Net Income'].dropna().items():
                 dados_anuais.append({
-                    'TICKER': ticker,
-                    'Tipo': 'Anual',
+                    'TICKER': ticker, 'Tipo': 'Anual',
                     'Período': data.strftime('%Y'),
                     'Data': data.strftime('%Y-%m-%d'),
                     'Resultado': valor
                 })
         df_anual = pd.DataFrame(dados_anuais)
 
-        # --- RESULTADOS TRIMESTRAIS ---
+        # --- TRIMESTRAIS ---
         dados_trim = []
         df_trim_raw = yf_ticker.quarterly_financials
         if 'Net Income' in df_trim_raw.index:
-            net_income = df_trim_raw.loc['Net Income'].dropna()
-            for data, valor in net_income.items():
+            for data, valor in df_trim_raw.loc['Net Income'].dropna().items():
                 trimestre = ((data.month - 1) // 3) + 1
                 periodo = f"{data.year}-Q{trimestre}"
                 dados_trim.append({
-                    'TICKER': ticker,
-                    'Tipo': 'Trimestral',
+                    'TICKER': ticker, 'Tipo': 'Trimestral',
                     'Período': periodo,
                     'Data': data.strftime('%Y-%m-%d'),
                     'Resultado': valor
                 })
-        df_trim = pd.DataFrame(dados_trim)[:-1]  # Remove último trimestre incompleto
+        df_trim = pd.DataFrame(dados_trim)[:-1]
 
         # --- DESCRIÇÃO ---
         info = yf_ticker.info
-        descricao = info.get('longBusinessSummary', 'Descrição não disponível.')
-        pais = info.get('country', 'N/A')
-        setor = info.get('sector', 'N/A')
         df_descricao = pd.DataFrame([{
             'TICKER': ticker,
-            'Descrição': descricao,
-            'País': pais,
-            'Setor': setor
+            'Descrição': info.get('longBusinessSummary', 'N/A'),
+            'País': info.get('country', 'N/A'),
+            'Setor': info.get('sector', 'N/A')
         }])
 
-        # --- COTAÇÕES + MM (60 dias) ---
+        # --- COTAÇÕES + MM ---
         data_hoje = datetime.today().strftime('%Y-%m-%d')
-        df_cot = yf.download(ticker, start='2020-01-01', end=data_hoje, progress=False)
+        df_cot = yf.download(
+            ticker,
+            start='2020-01-01',
+            end=data_hoje,
+            progress=False,
+            auto_adjust=False  # Remove o warning
+        )
         if df_cot.empty:
             st.error("Nenhuma cotação encontrada.")
             st.stop()
+
         df_cot = pd.DataFrame(df_cot['Close'])
         df_cot['mm'] = df_cot['Close'].rolling(60).mean()
         df_cot.dropna(inplace=True)
@@ -105,20 +96,19 @@ def coletar_dados(ticker):
         return df_anual, df_trim, df_descricao, df_cot
 
     except Exception as e:
-        st.error(f"Erro ao coletar dados: {e}")
+        st.error(f"Erro: {e}")
         st.stop()
 
-# Executa coleta
+# ========================================
+# EXECUTA COLETA
+# ========================================
 df_anual, df_trim, df_descricao, df = coletar_dados(ticker)
 
-# Lucro em milhões
 df_anual["Lucro_Milhoes"] = df_anual["Resultado"] / 1_000_000
 df_trim["Lucro_Milhoes"] = df_trim["Resultado"] / 1_000_000
-
 df_trim["Label"] = df_trim["Período"].str.replace("-Q", " Q")
 df_anual["Label"] = df_anual["Período"]
 
-# Último preço
 ultimo_preco = df["Close"].iloc[-1]
 ultima_data = df.index[-1]
 
@@ -133,16 +123,13 @@ st.markdown(
 )
 
 # ========================================
-# LUCRO TRIMESTRAL (ACIMA)
+# TRIMESTRAL
 # ========================================
 fig_trim = go.Figure()
 fig_trim.add_trace(go.Bar(
-    x=df_trim["Lucro_Milhoes"],
-    y=df_trim["Label"],
-    orientation='h',
-    text=[f"R$ {v:,.0f}M" for v in df_trim["Lucro_Milhoes"]],
-    textposition="outside",
-    marker_color="#00cc96"
+    x=df_trim["Lucro_Milhoes"], y=df_trim["Label"],
+    orientation='h', text=[f"R$ {v:,.0f}M" for v in df_trim["Lucro_Milhoes"]],
+    textposition="outside", marker_color="#00cc96"
 ))
 fig_trim.update_layout(
     title="Lucro Líquido Trimestral",
@@ -154,25 +141,20 @@ fig_trim.update_layout(
 st.plotly_chart(fig_trim, use_container_width=True, config={"displayModeBar": False})
 
 # ========================================
-# GRÁFICO PRINCIPAL + ANUAL
+# PREÇO + ANUAL
 # ========================================
 col1, col2 = st.columns([3, 1])
 
 with col1:
     fig_preco = go.Figure()
-    fig_preco.add_trace(go.Scatter(
-        x=df.index, y=df["Close"], mode="lines", name="Close",
-        line=dict(color="#3399ff", width=2)
-    ))
-    fig_preco.add_trace(go.Scatter(
-        x=df.index, y=df["mm"], mode="lines", name="Média Móvel",
-        line=dict(color="#9933ff", width=2, dash="dash")
-    ))
+    fig_preco.add_trace(go.Scatter(x=df.index, y=df["Close"], mode="lines", name="Close",
+                                   line=dict(color="#3399ff", width=2)))
+    fig_preco.add_trace(go.Scatter(x=df.index, y=df["mm"], mode="lines", name="Média Móvel",
+                                   line=dict(color="#9933ff", width=2, dash="dash")))
     
-    # Linha de referência
     ref = 91.07 if ticker == "SO" else df["Close"].mean()
     fig_preco.add_hline(y=ref, line_dash="dot", line_color="#555",
-                        annotation_text=f"Referência {ref:.2f}", annotation_position="bottom right")
+                        annotation_text=f"Ref {ref:.2f}", annotation_position="bottom right")
     
     fig_preco.add_annotation(
         x=ultima_data, y=ultimo_preco,
@@ -194,12 +176,9 @@ with col1:
 with col2:
     fig_anual = go.Figure()
     fig_anual.add_trace(go.Bar(
-        x=df_anual["Lucro_Milhoes"],
-        y=df_anual["Label"],
-        orientation='h',
-        text=[f"R$ {v:,.0f}M" for v in df_anual["Lucro_Milhoes"]],
-        textposition="outside",
-        marker_color="#00cc96"
+        x=df_anual["Lucro_Milhoes"], y=df_anual["Label"],
+        orientation='h', text=[f"R$ {v:,.0f}M" for v in df_anual["Lucro_Milhoes"]],
+        textposition="outside", marker_color="#00cc96"
     ))
     fig_anual.update_layout(
         title="Lucro Líquido Anual",
@@ -214,11 +193,9 @@ with col2:
 # DESCRIÇÃO
 # ========================================
 descricao = df_descricao.iloc[0]["Descrição"]
-descricao_curta = descricao[:500] + ("..." if len(descricao) > 500 else "")
-
+curta = descricao[:500] + ("..." if len(descricao) > 500 else "")
 st.markdown(
     f"<div style='background-color:#2d2d2d; padding:15px; border-radius:8px; font-size:13px; line-height:1.6; text-align:justify; margin-top:20px;'>"
-    f"{descricao_curta}"
-    f"</div>",
+    f"{curta}</div>",
     unsafe_allow_html=True
 )
