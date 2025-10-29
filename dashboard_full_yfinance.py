@@ -27,7 +27,7 @@ st.markdown("""
 # ========================================
 # ENTRADA DO TICKER
 # ========================================
-ticker = st.text_input("Digite o ticker (ex: SO, AAPL, PETR4.SA)", value="SO").upper().strip()
+ticker = st.text_input("Digite '.SA' para Ações Brasileiras)", value="Digitar").upper().strip()
 if not ticker:
     st.stop()
 
