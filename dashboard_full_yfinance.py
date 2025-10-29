@@ -1,0 +1,221 @@
+# dashboard_full_yfinance.py
+import streamlit as st
+import plotly.graph_objects as go
+import pandas as pd
+import yfinance as yf
+from datetime import datetime
+
+# ------------------------------------------------------------------
+# 1. CONFIGURAÇÃO DA PÁGINA
+# ------------------------------------------------------------------
+st.set_page_config(page_title="Dashboard Financeiro", layout="wide")
+
+# Fundo escuro + estilo
+st.markdown("""
+<style>
+    [data-testid="stAppViewContainer"] { background-color: #1a1a1a; color: white; }
+    .stPlotlyChart { background-color: #1a1a1a !important; }
+    h2 { color: #00cc96; text-align: center; margin: 10px 0; }
+    .stTextInput > div > div > input { background-color: #2d2d2d; color: white; border-radius: 8px; }
+    .stMarkdown { margin: 0; }
+</style>
+""", unsafe_allow_html=True)
+
+# ------------------------------------------------------------------
+# 2. ENTRADA DO TICKER
+# ------------------------------------------------------------------
+ticker = st.text_input("Digite o ticker (ex: SO, AAPL, PETR4.SA)", value="SO").upper().strip()
+
+if not ticker:
+    st.stop()
+
+# ------------------------------------------------------------------
+# 3. FUNÇÃO: COLETAR TODOS OS DADOS (seu código adaptado)
+# ------------------------------------------------------------------
+@st.cache_data(ttl=3600)
+def coletar_dados(ticker):
+    # --- 1. RESULTADOS ANUAIS ---
+    dados_anuais = []
+    yf_ticker = yf.Ticker(ticker)
+    df_anual_raw = yf_ticker.financials
+
+    if 'Net Income' in df_anual_raw.index:
+        net_income_anual = df_anual_raw.loc['Net Income'].dropna()
+        for data, valor in net_income_anual.items():
+            dados_anuais.append({
+                'TICKER': ticker,
+                'Tipo': 'Anual',
+                'Período': data.strftime('%Y'),
+                'Data': data.strftime('%Y-%m-%d'),
+                'Resultado': valor
+            })
+    df_anual = pd.DataFrame(dados_anuais)
+
+    # --- 2. RESULTADOS TRIMESTRAIS ---
+    dados_trim = []
+    df_trim_raw = yf_ticker.quarterly_financials
+
+    if 'Net Income' in df_trim_raw.index:
+        net_income_trim = df_trim_raw.loc['Net Income'].dropna()
+        for data, valor in net_income_trim.items():
+            trimestre = ((data.month - 1) // 3) + 1
+            periodo_trim = f"{data.year}-Q{trimestre}"
+            dados_trim.append({
+                'TICKER': ticker,
+                'Tipo': 'Trimestral',
+                'Período': periodo_trim,
+                'Data': data.strftime('%Y-%m-%d'),
+                'Resultado': valor
+            })
+    df_trim = pd.DataFrame(dados_trim)[:-1]  # Remove último (incompleto)
+
+    # --- 3. DESCRIÇÃO ---
+    df_descricao = pd.DataFrame()
+    try:
+        info = yf_ticker.info
+        descricao = info.get('longBusinessSummary', 'Nenhuma descrição disponível.')
+        pais = info.get('country', 'N/A')
+        setor = info.get('sector', 'N/A')
+        df_descricao = pd.DataFrame([{
+            'TICKER': ticker,
+            'Descrição': descricao,
+            'País': pais,
+            'Setor': setor
+        }])
+    except:
+        df_descricao = pd.DataFrame([{
+            'TICKER': ticker,
+            'Descrição': 'Erro ao carregar descrição.',
+            'País': 'N/A',
+            'Setor': 'N/A'
+        }])
+
+    # --- 4. COTAÇÕES + MM ---
+    data_hoje = datetime.today().strftime('%Y-%m-%d')
+    start_data = '2020-01-01'
+    df_cot = yf.download(ticker, start=start_data, end=data_hoje, progress=False)
+    
+    if df_cot.empty:
+        st.error("Nenhuma cotação encontrada.")
+        st.stop()
+
+    df_cot = pd.DataFrame(df_cot['Close'])
+    df_cot['mm'] = df_cot['Close'].rolling(60).mean()
+    df_cot.dropna(inplace=True)
+
+    return df_anual, df_trim, df_descricao, df_cot
+
+# Executa coleta
+df_anual, df_trim, df_descricao, df = coletar_dados(ticker)
+
+# Lucro em milhões
+df_anual["Lucro_Milhoes"] = df_anual["Resultado"] / 1_000_000
+df_trim["Lucro_Milhoes"] = df_trim["Resultado"] / 1_000_000
+
+df_trim["Label"] = df_trim["Período"].str.replace("-Q", " Q")
+df_anual["Label"] = df_anual["Período"]
+
+# Último preço
+ultimo_preco = df["Close"].iloc[-1]
+ultima_data = df.index[-1]
+
+# ------------------------------------------------------------------
+# 5. TÍTULO
+# ------------------------------------------------------------------
+st.markdown(f"<h2>{ticker}</h2>", unsafe_allow_html=True)
+st.markdown(
+    f"<p style='text-align:center; color:#aaa; font-size:14px;'>"
+    f"País: {df_descricao.iloc[0]['País']} | Setor: {df_descricao.iloc[0]['Setor']}</p>",
+    unsafe_allow_html=True
+)
+
+# ------------------------------------------------------------------
+# 6. LUCRO TRIMESTRAL (ACIMA)
+# ------------------------------------------------------------------
+fig_trim = go.Figure()
+fig_trim.add_trace(go.Bar(
+    x=df_trim["Lucro_Milhoes"],
+    y=df_trim["Label"],
+    orientation='h',
+    text=[f"R$ {v:,.0f}M" for v in df_trim["Lucro_Milhoes"]],
+    textposition="outside",
+    marker_color="#00cc96"
+))
+fig_trim.update_layout(
+    title="Lucro Líquido Trimestral",
+    xaxis=dict(range=[0, df_trim["Lucro_Milhoes"].max() * 1.3], showgrid=False),
+    yaxis=dict(showgrid=False),
+    plot_bgcolor="#1a1a1a", paper_bgcolor="#1a1a1a", font_color="white",
+    margin=dict(l=100, r=100, t=60, b=40), height=180
+)
+st.plotly_chart(fig_trim, use_container_width=True, config={"displayModeBar": False})
+
+# ------------------------------------------------------------------
+# 7. GRÁFICO PRINCIPAL + ANUAL
+# ------------------------------------------------------------------
+col1, col2 = st.columns([3, 1])
+
+with col1:
+    fig_preco = go.Figure()
+    fig_preco.add_trace(go.Scatter(
+        x=df.index, y=df["Close"], mode="lines", name="Close",
+        line=dict(color="#3399ff", width=2)
+    ))
+    fig_preco.add_trace(go.Scatter(
+        x=df.index, y=df["mm"], mode="lines", name="Média Móvel",
+        line=dict(color="#9933ff", width=2, dash="dash")
+    ))
+    
+    # Linha de referência (91.07 para SO, senão média)
+    ref = 91.07 if ticker == "SO" else df["Close"].mean()
+    fig_preco.add_hline(y=ref, line_dash="dot", line_color="#555",
+                        annotation_text=f"Referência {ref:.2f}", annotation_position="bottom right")
+    
+    fig_preco.add_annotation(
+        x=ultima_data, y=ultimo_preco,
+        text=f"Post<br>{ultimo_preco:.2f}",
+        showarrow=True, arrowhead=2, ax=50, ay=-40,
+        bgcolor="#00cc96", font=dict(color="black", size=11),
+        bordercolor="#00cc96", borderwidth=2
+    )
+    fig_preco.update_layout(
+        xaxis=dict(tickformat="%Y", gridcolor="#333"),
+        yaxis=dict(title="Preço (USD)", gridcolor="#333"),
+        plot_bgcolor="#1a1a1a", paper_bgcolor="#1a1a1a", font_color="white",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        margin=dict(l=60, r=20, t=40, b=20), height=320,
+        hovermode="x unified"
+    )
+    st.plotly_chart(fig_preco, use_container_width=True, config={"displayModeBar": False})
+
+with col2:
+    fig_anual = go.Figure()
+    fig_anual.add_trace(go.Bar(
+        x=df_anual["Lucro_Milhoes"],
+        y=df_anual["Label"],
+        orientation='h',
+        text=[f"R$ {v:,.0f}M" for v in df_anual["Lucro_Milhoes"]],
+        textposition="outside",
+        marker_color="#00cc96"
+    ))
+    fig_anual.update_layout(
+        title="Lucro Líquido Anual",
+        xaxis=dict(range=[0, df_anual["Lucro_Milhoes"].max() * 1.3], showgrid=False),
+        yaxis=dict(showgrid=False),
+        plot_bgcolor="#1a1a1a", paper_bgcolor="#1a1a1a", font_color="white",
+        margin=dict(l=20, r=100, t=60, b=40), height=320
+    )
+    st.plotly_chart(fig_anual, use_container_width=True, config={"displayModeBar": False})
+
+# ------------------------------------------------------------------
+# 8. DESCRIÇÃO
+# ------------------------------------------------------------------
+descricao = df_descricao.iloc[0]["Descrição"]
+descricao_curta = descricao[:500] + ("..." if len(descricao) > 500 else "")
+
+st.markdown(
+    f"<div style='background-color:#2d2d2d; padding:15px; border-radius:8px; font-size:13px; line-height:1.6; text-align:justify; margin-top:20px;'>"
+    f"{descricao_curta}"
+    f"</div>",
+    unsafe_allow_html=True
+)
