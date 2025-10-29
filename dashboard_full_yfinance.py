@@ -27,7 +27,7 @@ st.markdown("""
 # ========================================
 # ENTRADA DO TICKER
 # ========================================
-ticker = st.text_input("", value="Digitar").upper().strip()
+ticker = st.text_input("", value="").upper().strip()
 if not ticker:
     st.stop()
 
