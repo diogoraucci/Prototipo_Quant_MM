@@ -5,15 +5,7 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime
 
-# ========================================
-# CONFIGURAÇÃO DA PÁGINA
-# ========================================
-st.set_page_config(
-    page_title="Dashboard Financeiro",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
-
+st.set_page_config(page_title="Dashboard Financeiro", layout="wide")
 st.markdown("""
 <style>
     .stApp { background-color: #1a1a1a; color: white; }
@@ -24,16 +16,10 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ========================================
-# ENTRADA DO TICKER
-# ========================================
-ticker = st.text_input("", value="").upper().strip()
+ticker = st.text_input("Digite o ticker (ex: SO, AAPL, PETR4.SA)", value="SO").upper().strip()
 if not ticker:
     st.stop()
 
-# ========================================
-# FUNÇÃO: COLETAR DADOS
-# ========================================
 @st.cache_data(ttl=3600)
 def coletar_dados(ticker):
     try:
@@ -76,20 +62,25 @@ def coletar_dados(ticker):
             'Setor': info.get('sector', 'N/A')
         }])
 
-        # --- COTAÇÕES + MM ---
+        # --- COTAÇÕES + MM (CORRIGIDO) ---
         data_hoje = datetime.today().strftime('%Y-%m-%d')
-        df_cot = yf.download(
+        raw = yf.download(
             ticker,
             start='2020-01-01',
             end=data_hoje,
             progress=False,
-            auto_adjust=False  # Remove o warning
+            auto_adjust=False
         )
-        if df_cot.empty:
+        if raw.empty:
             st.error("Nenhuma cotação encontrada.")
             st.stop()
 
-        df_cot = pd.DataFrame(df_cot['Close'])
+        # ACESSO SEGURO À COLUNA 'Close'
+        if isinstance(raw.columns, pd.MultiIndex):
+            df_cot = raw.xs('Close', axis=1, level=0).to_frame(name='Close')
+        else:
+            df_cot = raw[['Close']].copy()
+
         df_cot['mm'] = df_cot['Close'].rolling(60).mean()
         df_cot.dropna(inplace=True)
 
@@ -99,9 +90,7 @@ def coletar_dados(ticker):
         st.error(f"Erro: {e}")
         st.stop()
 
-# ========================================
-# EXECUTA COLETA
-# ========================================
+# EXECUTA
 df_anual, df_trim, df_descricao, df = coletar_dados(ticker)
 
 df_anual["Lucro_Milhoes"] = df_anual["Resultado"] / 1_000_000
@@ -112,9 +101,7 @@ df_anual["Label"] = df_anual["Período"]
 ultimo_preco = df["Close"].iloc[-1]
 ultima_data = df.index[-1]
 
-# ========================================
 # TÍTULO
-# ========================================
 st.markdown(f"<h2>{ticker}</h2>", unsafe_allow_html=True)
 st.markdown(
     f"<p style='text-align:center; color:#aaa; font-size:14px;'>"
@@ -122,9 +109,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ========================================
 # TRIMESTRAL
-# ========================================
 fig_trim = go.Figure()
 fig_trim.add_trace(go.Bar(
     x=df_trim["Lucro_Milhoes"], y=df_trim["Label"],
@@ -140,9 +125,7 @@ fig_trim.update_layout(
 )
 st.plotly_chart(fig_trim, use_container_width=True, config={"displayModeBar": False})
 
-# ========================================
 # PREÇO + ANUAL
-# ========================================
 col1, col2 = st.columns([3, 1])
 
 with col1:
@@ -189,9 +172,7 @@ with col2:
     )
     st.plotly_chart(fig_anual, use_container_width=True, config={"displayModeBar": False})
 
-# ========================================
 # DESCRIÇÃO
-# ========================================
 descricao = df_descricao.iloc[0]["Descrição"]
 curta = descricao[:500] + ("..." if len(descricao) > 500 else "")
 st.markdown(
