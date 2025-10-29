@@ -5,7 +5,11 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime
 
+# ========================================
+# CONFIGURAÇÃO
+# ========================================
 st.set_page_config(page_title="Dashboard Financeiro", layout="wide")
+
 st.markdown("""
 <style>
     .stApp { background-color: #1a1a1a; color: white; }
@@ -16,29 +20,36 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# ========================================
+# ENTRADA
+# ========================================
 ticker = st.text_input("Digite o ticker (ex: SO, AAPL, PETR4.SA)", value="SO").upper().strip()
 if not ticker:
     st.stop()
 
+# ========================================
+# FUNÇÃO: COLETAR DADOS (SEU CÓDIGO + CORREÇÕES)
+# ========================================
 @st.cache_data(ttl=3600)
 def coletar_dados(ticker):
     try:
         yf_ticker = yf.Ticker(ticker)
 
-        # --- ANUAIS ---
+        # --- 1. RESULTADOS ANUAIS ---
         dados_anuais = []
         df_anual_raw = yf_ticker.financials
         if 'Net Income' in df_anual_raw.index:
             for data, valor in df_anual_raw.loc['Net Income'].dropna().items():
                 dados_anuais.append({
-                    'TICKER': ticker, 'Tipo': 'Anual',
+                    'TICKER': ticker,
+                    'Tipo': 'Anual',
                     'Período': data.strftime('%Y'),
                     'Data': data.strftime('%Y-%m-%d'),
                     'Resultado': valor
                 })
         df_anual = pd.DataFrame(dados_anuais)
 
-        # --- TRIMESTRAIS ---
+        # --- 2. RESULTADOS TRIMESTRAIS ---
         dados_trim = []
         df_trim_raw = yf_ticker.quarterly_financials
         if 'Net Income' in df_trim_raw.index:
@@ -46,14 +57,15 @@ def coletar_dados(ticker):
                 trimestre = ((data.month - 1) // 3) + 1
                 periodo = f"{data.year}-Q{trimestre}"
                 dados_trim.append({
-                    'TICKER': ticker, 'Tipo': 'Trimestral',
+                    'TICKER': ticker,
+                    'Tipo': 'Trimestral',
                     'Período': periodo,
                     'Data': data.strftime('%Y-%m-%d'),
                     'Resultado': valor
                 })
-        df_trim = pd.DataFrame(dados_trim)[:-1]
+        df_trim = pd.DataFrame(dados_trim)[:-1]  # Remove último (incompleto)
 
-        # --- DESCRIÇÃO ---
+        # --- 3. DESCRIÇÃO ---
         info = yf_ticker.info
         df_descricao = pd.DataFrame([{
             'TICKER': ticker,
@@ -62,9 +74,9 @@ def coletar_dados(ticker):
             'Setor': info.get('sector', 'N/A')
         }])
 
-        # --- COTAÇÕES + MM (CORRIGIDO) ---
+        # --- 4. COTAÇÕES + MM (CORRIGIDO 100%) ---
         data_hoje = datetime.today().strftime('%Y-%m-%d')
-        raw = yf.download(
+        df_raw = yf.download(
             ticker,
             start='2020-01-01',
             end=data_hoje,
@@ -72,36 +84,35 @@ def coletar_dados(ticker):
             auto_adjust=False
         )
 
-        if raw.empty:
+        if df_raw.empty:
             st.error("Nenhuma cotação encontrada.")
             st.stop()
 
-        # EXTRAI 'Close' DE FORMA ROBUSTA
-        if 'Close' in raw.columns:
-            close_series = raw['Close']
-        elif isinstance(raw.columns, pd.MultiIndex):
-            try:
-                close_series = raw[('Close', ticker)]
-            except:
-                close_series = raw['Close'].iloc[:, 0]
+        # PEGA A COLUNA 'Close' DE FORMA SEGURA
+        if isinstance(df_raw.columns, pd.MultiIndex):
+            close_col = df_raw['Close'].iloc[:, 0]  # Primeiro ticker
         else:
-            close_series = raw.iloc[:, 0]
+            close_col = df_raw['Close']
 
-        close_series.name = 'Close'
-        df_cot = close_series.to_frame()
-
+        # Cria DataFrame com índice de data
+        df_cot = pd.DataFrame({
+            'Close': close_col
+        })
         df_cot['mm'] = df_cot['Close'].rolling(60).mean()
         df_cot.dropna(inplace=True)
 
         return df_anual, df_trim, df_descricao, df_cot
 
     except Exception as e:
-        st.error(f"Erro: {e}")
+        st.error(f"Erro ao coletar dados: {e}")
         st.stop()
 
+# ========================================
 # EXECUTA
+# ========================================
 df_anual, df_trim, df_descricao, df = coletar_dados(ticker)
 
+# Lucro em milhões
 df_anual["Lucro_Milhoes"] = df_anual["Resultado"] / 1_000_000
 df_trim["Lucro_Milhoes"] = df_trim["Resultado"] / 1_000_000
 df_trim["Label"] = df_trim["Período"].str.replace("-Q", " Q")
@@ -110,7 +121,9 @@ df_anual["Label"] = df_anual["Período"]
 ultimo_preco = df["Close"].iloc[-1]
 ultima_data = df.index[-1]
 
+# ========================================
 # TÍTULO
+# ========================================
 st.markdown(f"<h2>{ticker}</h2>", unsafe_allow_html=True)
 st.markdown(
     f"<p style='text-align:center; color:#aaa; font-size:14px;'>"
@@ -118,23 +131,29 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# ========================================
 # TRIMESTRAL
+# ========================================
 fig_trim = go.Figure()
 fig_trim.add_trace(go.Bar(
     x=df_trim["Lucro_Milhoes"], y=df_trim["Label"],
-    orientation='h', text=[f"R$ {v:,.0f}M" for v in df_trim["Lucro_Milhoes"]],
-    textposition="outside", marker_color="#00cc96"
+    orientation='h',
+    text=[f"R$ {v:,.0f}M" for v in df_trim["Lucro_Milhoes"]],
+    textposition="outside",
+    marker_color="#00cc96"
 ))
 fig_trim.update_layout(
     title="Lucro Líquido Trimestral",
-    xaxis=dict(range=[0, df_trim["Lucro_Milhoes"].max() * 1.3], showOAc=True),
+    xaxis=dict(showgrid=False),
     yaxis=dict(showgrid=False),
     plot_bgcolor="#1a1a1a", paper_bgcolor="#1a1a1a", font_color="white",
     margin=dict(l=100, r=100, t=60, b=40), height=180
 )
 st.plotly_chart(fig_trim, use_container_width=True, config={"displayModeBar": False})
 
+# ========================================
 # PREÇO + ANUAL
+# ========================================
 col1, col2 = st.columns([3, 1])
 
 with col1:
@@ -169,19 +188,23 @@ with col2:
     fig_anual = go.Figure()
     fig_anual.add_trace(go.Bar(
         x=df_anual["Lucro_Milhoes"], y=df_anual["Label"],
-        orientation='h', text=[f"R$ {v:,.0f}M" for v in df_anual["Lucro_Milhoes"]],
-        textposition="outside", marker_color="#00cc96"
+        orientation='h',
+        text=[f"R$ {v:,.0f}M" for v in df_anual["Lucro_Milhoes"]],
+        textposition="outside",
+        marker_color="#00cc96"
     ))
     fig_anual.update_layout(
         title="Lucro Líquido Anual",
-        xaxis=dict(range=[0, df_anual["Lucro_Milhoes"].max() * 1.3], showgrid=False),
+        xaxis=dict(showgrid=False),
         yaxis=dict(showgrid=False),
         plot_bgcolor="#1a1a1a", paper_bgcolor="#1a1a1a", font_color="white",
         margin=dict(l=20, r=100, t=60, b=40), height=320
     )
     st.plotly_chart(fig_anual, use_container_width=True, config={"displayModeBar": False})
 
+# ========================================
 # DESCRIÇÃO
+# ========================================
 descricao = df_descricao.iloc[0]["Descrição"]
 curta = descricao[:500] + ("..." if len(descricao) > 500 else "")
 st.markdown(
