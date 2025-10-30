@@ -63,7 +63,7 @@ def coletar_dados(ticker):
                     'Data': data.strftime('%Y-%m-%d'),
                     'Resultado': valor
                 })
-        df_trim = pd.DataFrame(dados_trim)[:-1]  # Remove último (incompleto)
+        df_trim = pd.DataFrame(dados_trim)[:-1]          # remove último (incompleto)
 
         # --- 3. DESCRIÇÃO ---
         info = yf_ticker.info
@@ -83,17 +83,11 @@ def coletar_dados(ticker):
             progress=False,
             auto_adjust=False
         )
-
         if df_raw.empty:
             st.error("Nenhuma cotação encontrada.")
             st.stop()
 
-        # PEGA A COLUNA 'Close' DE FORMA SEGURA
-        if isinstance(df_raw.columns, pd.MultiIndex):
-            close_col = df_raw['Close'].iloc[:, 0]
-        else:
-            close_col = df_raw['Close']
-
+        close_col = df_raw['Close'].iloc[:, 0] if isinstance(df_raw.columns, pd.MultiIndex) else df_raw['Close']
         df_cot = pd.DataFrame({'Close': close_col})
         df_cot['mm'] = df_cot['Close'].rolling(60).mean()
         df_cot.dropna(inplace=True)
@@ -111,15 +105,15 @@ df_anual, df_trim, df_descricao, df = coletar_dados(ticker)
 
 # Lucro em milhões
 df_anual["Lucro_Milhoes"] = df_anual["Resultado"] / 1_000_000
-df_trim["Lucro_Milhoes"] = df_trim["Resultado"] / 1_000_000
+df_trim["Lucro_Milhoes"]  = df_trim["Resultado"]  / 1_000_000
 df_trim["Label"] = df_trim["Período"].str.replace("-Q", " Q")
 df_anual["Label"] = df_anual["Período"]
 
 ultimo_preco = df["Close"].iloc[-1]
-ultima_data = df.index[-1]
+ultima_data  = df.index[-1]
 
 # ========================================
-# TÍTULO
+# TÍTULO + INFO
 # ========================================
 st.markdown(f"<h2>{ticker}</h2>", unsafe_allow_html=True)
 st.markdown(
@@ -129,51 +123,22 @@ st.markdown(
 )
 
 # ========================================
-# TRIMESTRAL (com cores condicionais)
+# LINHA 1 – PREÇO (esquerda) + ANUAL (direita)
 # ========================================
-fig_trim = go.Figure()
+col_price, col_anual = st.columns([3, 1])
 
-# Cores e posição do texto
-colors_trim = ['#00cc96' if x >= 0 else '#ff4444' for x in df_trim["Lucro_Milhoes"]]
-textpos_trim = ['outside' if x >= 0 else 'inside' for x in df_trim["Lucro_Milhoes"]]
-
-fig_trim.add_trace(go.Bar(
-    x=df_trim["Lucro_Milhoes"], 
-    y=df_trim["Label"],
-    orientation='h',
-    text=[f"R$ {v:,.0f}M" for v in df_trim["Lucro_Milhoes"]],
-    textposition=textpos_trim,
-    marker_color=colors_trim,
-    textfont=dict(color='white')
-))
-fig_trim.update_layout(
-    title="Lucro Líquido Trimestral",
-    xaxis=dict(showgrid=False),
-    yaxis=dict(showgrid=False),
-    plot_bgcolor="#1a1a1a", 
-    paper_bgcolor="#1a1a1a", 
-    font_color="white",
-    margin=dict(l=100, r=100, t=60, b=40), 
-    height=180
-)
-st.plotly_chart(fig_trim, use_container_width=True, config={"displayModeBar": False})
-
-# ========================================
-# PREÇO + ANUAL
-# ========================================
-col1, col2 = st.columns([3, 1])
-
-with col1:
+# ---------- GRÁFICO DE PREÇO ----------
+with col_price:
     fig_preco = go.Figure()
     fig_preco.add_trace(go.Scatter(x=df.index, y=df["Close"], mode="lines", name="Close",
                                    line=dict(color="#3399ff", width=2)))
     fig_preco.add_trace(go.Scatter(x=df.index, y=df["mm"], mode="lines", name="Média Móvel",
                                    line=dict(color="#9933ff", width=2, dash="dash")))
-    
+
     ref = 91.07 if ticker == "SO" else df["Close"].mean()
     fig_preco.add_hline(y=ref, line_dash="dot", line_color="#555",
                         annotation_text=f"Ref {ref:.2f}", annotation_position="bottom right")
-    
+
     fig_preco.add_annotation(
         x=ultima_data, y=ultimo_preco,
         text=f"Post<br>{ultimo_preco:.2f}",
@@ -191,16 +156,14 @@ with col1:
     )
     st.plotly_chart(fig_preco, use_container_width=True, config={"displayModeBar": False})
 
-with col2:
-    # --- GRÁFICO ANUAL (com cores condicionais) ---
-    fig_anual = go.Figure()
-
+# ---------- GRÁFICO ANUAL ----------
+with col_anual:
     colors_anual = ['#00cc96' if x >= 0 else '#ff4444' for x in df_anual["Lucro_Milhoes"]]
     textpos_anual = ['outside' if x >= 0 else 'inside' for x in df_anual["Lucro_Milhoes"]]
 
+    fig_anual = go.Figure()
     fig_anual.add_trace(go.Bar(
-        x=df_anual["Lucro_Milhoes"], 
-        y=df_anual["Label"],
+        x=df_anual["Lucro_Milhoes"], y=df_anual["Label"],
         orientation='h',
         text=[f"R$ {v:,.0f}M" for v in df_anual["Lucro_Milhoes"]],
         textposition=textpos_anual,
@@ -211,13 +174,34 @@ with col2:
         title="Lucro Líquido Anual",
         xaxis=dict(showgrid=False),
         yaxis=dict(showgrid=False),
-        plot_bgcolor="#1a1a1a", 
-        paper_bgcolor="#1a1a1a", 
-        font_color="white",
-        margin=dict(l=20, r=100, t=60, b=40), 
-        height=320
+        plot_bgcolor="#1a1a1a", paper_bgcolor="#1a1a1a", font_color="white",
+        margin=dict(l=20, r=100, t=60, b=40), height=320
     )
     st.plotly_chart(fig_anual, use_container_width=True, config={"displayModeBar": False})
+
+# ========================================
+# LINHA 2 – TRIMESTRAL (largura total)
+# ========================================
+colors_trim = ['#00cc96' if x >= 0 else '#ff4444' for x in df_trim["Lucro_Milhoes"]]
+textpos_trim = ['outside' if x >= 0 else 'inside' for x in df_trim["Lucro_Milhoes"]]
+
+fig_trim = go.Figure()
+fig_trim.add_trace(go.Bar(
+    x=df_trim["Lucro_Milhoes"], y=df_trim["Label"],
+    orientation='h',
+    text=[f"R$ {v:,.0f}M" for v in df_trim["Lucro_Milhoes"]],
+    textposition=textpos_trim,
+    marker_color=colors_trim,
+    textfont=dict(color='white')
+))
+fig_trim.update_layout(
+    title="Lucro Líquido Trimestral",
+    xaxis=dict(showgrid=False),
+    yaxis=dict(showgrid=False),
+    plot_bgcolor="#1a1a1a", paper_bgcolor="#1a1a1a", font_color="white",
+    margin=dict(l=100, r=100, t=60, b=40), height=200
+)
+st.plotly_chart(fig_trim, use_container_width=True, config={"displayModeBar": False})
 
 # ========================================
 # DESCRIÇÃO
@@ -225,7 +209,8 @@ with col2:
 descricao = df_descricao.iloc[0]["Descrição"]
 curta = descricao[:500] + ("..." if len(descricao) > 500 else "")
 st.markdown(
-    f"<div style='background-color:#2d2d2d; padding:15px; border-radius:8px; font-size:13px; line-height:1.6; text-align:justify; margin-top:20px;'>"
+    f"<div style='background-color:#2d2d2d; padding:15px; border-radius:8px; "
+    f"font-size:13px; line-height:1.6; text-align:justify; margin-top:20px;'>"
     f"{curta}</div>",
     unsafe_allow_html=True
 )
