@@ -63,7 +63,7 @@ def coletar_dados(ticker):
                     'Data': data.strftime('%Y-%m-%d'),
                     'Resultado': valor
                 })
-        df_trim = pd.DataFrame(dados_trim)[:-1]          # remove último (incompleto)
+        df_trim = pd.DataFrame(dados_trim)[:-1]  # remove último (incompleto)
 
         # --- 3. DESCRIÇÃO ---
         info = yf_ticker.info
@@ -123,16 +123,16 @@ st.markdown(
 )
 
 # ========================================
-# LINHA 1 – PREÇO (esquerda) + ANUAL (direita)
+# LINHA PRINCIPAL: PREÇO | ANUAL | TRIMESTRAL
 # ========================================
-col_price, col_anual = st.columns([3, 1])
+col_price, col_anual, col_trim = st.columns([5, 2, 2])
 
 # ---------- GRÁFICO DE PREÇO ----------
 with col_price:
     fig_preco = go.Figure()
     fig_preco.add_trace(go.Scatter(x=df.index, y=df["Close"], mode="lines", name="Close",
                                    line=dict(color="#3399ff", width=2)))
-    fig_preco.add_trace(go.Scatter(x=df.index, y=df["mm"], mode="lines", name="Média Móvel",
+    fig_preco.add_trace(go.Scatter(x=df.index, y=df["mm"], mode="lines", name="Média Móvel 60",
                                    line=dict(color="#9933ff", width=2, dash="dash")))
 
     ref = 91.07 if ticker == "SO" else df["Close"].mean()
@@ -141,7 +141,7 @@ with col_price:
 
     fig_preco.add_annotation(
         x=ultima_data, y=ultimo_preco,
-        text=f"Post<br>{ultimo_preco:.2f}",
+        text=f"{ultimo_preco:.2f}",
         showarrow=True, arrowhead=2, ax=50, ay=-40,
         bgcolor="#00cc96", font=dict(color="black", size=11),
         bordercolor="#00cc96", borderwidth=2
@@ -151,7 +151,7 @@ with col_price:
         yaxis=dict(title="Preço (USD)", gridcolor="#333"),
         plot_bgcolor="#1a1a1a", paper_bgcolor="#1a1a1a", font_color="white",
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        margin=dict(l=60, r=20, t=40, b=20), height=320,
+        margin=dict(l=60, r=20, t=40, b=20), height=380,
         hovermode="x unified"
     )
     st.plotly_chart(fig_preco, use_container_width=True, config={"displayModeBar": False})
@@ -165,52 +165,54 @@ with col_anual:
     fig_anual.add_trace(go.Bar(
         x=df_anual["Lucro_Milhoes"], y=df_anual["Label"],
         orientation='h',
-        text=[f"R$ {v:,.0f}M" for v in df_anual["Lucro_Milhoes"]],
+        text=[f"{v:,.0f}M" for v in df_anual["Lucro_Milhoes"]],
         textposition=textpos_anual,
         marker_color=colors_anual,
-        textfont=dict(color='white')
+        textfont=dict(color='white', size=10)
     ))
     fig_anual.update_layout(
-        title="Lucro Líquido Anual",
-        xaxis=dict(showgrid=False),
+        title="Lucro Anual",
+        title_font_size=14,
+        xaxis=dict(showgrid=False, title="R$ (M)", title_font_size=11),
         yaxis=dict(showgrid=False),
         plot_bgcolor="#1a1a1a", paper_bgcolor="#1a1a1a", font_color="white",
-        margin=dict(l=20, r=100, t=60, b=40), height=320
+        margin=dict(l=20, r=60, t=50, b=20), height=380
     )
     st.plotly_chart(fig_anual, use_container_width=True, config={"displayModeBar": False})
 
-# ========================================
-# LINHA 2 – TRIMESTRAL (largura total)
-# ========================================
-colors_trim = ['#00cc96' if x >= 0 else '#ff4444' for x in df_trim["Lucro_Milhoes"]]
-textpos_trim = ['outside' if x >= 0 else 'inside' for x in df_trim["Lucro_Milhoes"]]
+# ---------- GRÁFICO TRIMESTRAL ----------
+with col_trim:
+    colors_trim = ['#00cc96' if x >= 0 else '#ff4444' for x in df_trim["Lucro_Milhoes"]]
+    textpos_trim = ['outside' if x >= 0 else 'inside' for x in df_trim["Lucro_Milhoes"]]
 
-fig_trim = go.Figure()
-fig_trim.add_trace(go.Bar(
-    x=df_trim["Lucro_Milhoes"], y=df_trim["Label"],
-    orientation='h',
-    text=[f"R$ {v:,.0f}M" for v in df_trim["Lucro_Milhoes"]],
-    textposition=textpos_trim,
-    marker_color=colors_trim,
-    textfont=dict(color='white')
-))
-fig_trim.update_layout(
-    title="Lucro Líquido Trimestral",
-    xaxis=dict(showgrid=False),
-    yaxis=dict(showgrid=False),
-    plot_bgcolor="#1a1a1a", paper_bgcolor="#1a1a1a", font_color="white",
-    margin=dict(l=100, r=100, t=60, b=40), height=200
-)
-st.plotly_chart(fig_trim, use_container_width=True, config={"displayModeBar": False})
+    fig_trim = go.Figure()
+    fig_trim.add_trace(go.Bar(
+        x=df_trim["Lucro_Milhoes"], y=df_trim["Label"],
+        orientation='h',
+        text=[f"{v:,.0f}M" for v in df_trim["Lucro_Milhoes"]],
+        textposition=textpos_trim,
+        marker_color=colors_trim,
+        textfont=dict(color='white', size=9)
+    ))
+    fig_trim.update_layout(
+        title="Lucro Trimestral",
+        title_font_size=14,
+        xaxis=dict(showgrid=False, title="R$ (M)", title_font_size=11),
+        yaxis=dict(showgrid=False),
+        plot_bgcolor="#1a1a1a", paper_bgcolor="#1a1a1a", font_color="white",
+        margin=dict(l=20, r=60, t=50, b=20), height=380
+    )
+    st.plotly_chart(fig_trim, use_container_width=True, config={"displayModeBar": False})
 
 # ========================================
-# DESCRIÇÃO
+# DESCRIÇÃO (LARGURA TOTAL)
 # ========================================
+st.markdown("---")
 descricao = df_descricao.iloc[0]["Descrição"]
-curta = descricao[:500] + ("..." if len(descricao) > 500 else "")
+curta = descricao[:800] + ("..." if len(descricao) > 800 else "")
 st.markdown(
-    f"<div style='background-color:#2d2d2d; padding:15px; border-radius:8px; "
-    f"font-size:13px; line-height:1.6; text-align:justify; margin-top:20px;'>"
+    f"<div style='background-color:#2d2d2d; padding:18px; border-radius:10px; "
+    f"font-size:13.5px; line-height:1.7; text-align:justify; margin-top:10px;'>"
     f"{curta}</div>",
     unsafe_allow_html=True
 )
