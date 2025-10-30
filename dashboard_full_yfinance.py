@@ -132,22 +132,28 @@ st.markdown(
 )
 
 # ========================================
-# TRIMESTRAL
+# TRIMESTRAL (com barras negativas em vermelho)
 # ========================================
 fig_trim = go.Figure()
+colors_trim = ['#00cc96' if x >= 0 else '#ff4444' for x in df_trim["Lucro_Milhoes"]]
+
 fig_trim.add_trace(go.Bar(
-    x=df_trim["Lucro_Milhoes"], y=df_trim["Label"],
+    x=df_trim["Lucro_Milhoes"], 
+    y=df_trim["Label"],
     orientation='h',
     text=[f"R$ {v:,.0f}M" for v in df_trim["Lucro_Milhoes"]],
     textposition="outside",
-    marker_color="#00cc96"
+    marker_color=colors_trim
 ))
 fig_trim.update_layout(
     title="Lucro Líquido Trimestral",
     xaxis=dict(showgrid=False),
     yaxis=dict(showgrid=False),
-    plot_bgcolor="#1a1a1a", paper_bgcolor="#1a1a1a", font_color="white",
-    margin=dict(l=100, r=100, t=60, b=40), height=180
+    plot_bgcolor="#1a1a1a", 
+    paper_bgcolor="#1a1a1a", 
+    font_color="white",
+    margin=dict(l=100, r=100, t=60, b=40), 
+    height=180
 )
 st.plotly_chart(fig_trim, use_container_width=True, config={"displayModeBar": False})
 
