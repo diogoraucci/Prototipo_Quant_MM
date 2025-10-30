@@ -28,7 +28,7 @@ if not ticker:
     st.stop()
 
 # ========================================
-# FUNÇÃO: COLETAR DADOS (SEU CÓDIGO + CORREÇÕES)
+# FUNÇÃO: COLETAR DADOS
 # ========================================
 @st.cache_data(ttl=3600)
 def coletar_dados(ticker):
@@ -74,7 +74,7 @@ def coletar_dados(ticker):
             'Setor': info.get('sector', 'N/A')
         }])
 
-        # --- 4. COTAÇÕES + MM (CORRIGIDO 100%) ---
+        # --- 4. COTAÇÕES + MM ---
         data_hoje = datetime.today().strftime('%Y-%m-%d')
         df_raw = yf.download(
             ticker,
@@ -90,14 +90,11 @@ def coletar_dados(ticker):
 
         # PEGA A COLUNA 'Close' DE FORMA SEGURA
         if isinstance(df_raw.columns, pd.MultiIndex):
-            close_col = df_raw['Close'].iloc[:, 0]  # Primeiro ticker
+            close_col = df_raw['Close'].iloc[:, 0]
         else:
             close_col = df_raw['Close']
 
-        # Cria DataFrame com índice de data
-        df_cot = pd.DataFrame({
-            'Close': close_col
-        })
+        df_cot = pd.DataFrame({'Close': close_col})
         df_cot['mm'] = df_cot['Close'].rolling(60).mean()
         df_cot.dropna(inplace=True)
 
@@ -132,18 +129,22 @@ st.markdown(
 )
 
 # ========================================
-# TRIMESTRAL (com barras negativas em vermelho)
+# TRIMESTRAL (com cores condicionais)
 # ========================================
 fig_trim = go.Figure()
+
+# Cores e posição do texto
 colors_trim = ['#00cc96' if x >= 0 else '#ff4444' for x in df_trim["Lucro_Milhoes"]]
+textpos_trim = ['outside' if x >= 0 else 'inside' for x in df_trim["Lucro_Milhoes"]]
 
 fig_trim.add_trace(go.Bar(
     x=df_trim["Lucro_Milhoes"], 
     y=df_trim["Label"],
     orientation='h',
     text=[f"R$ {v:,.0f}M" for v in df_trim["Lucro_Milhoes"]],
-    textposition="outside",
-    marker_color=colors_trim
+    textposition=textpos_trim,
+    marker_color=colors_trim,
+    textfont=dict(color='white')
 ))
 fig_trim.update_layout(
     title="Lucro Líquido Trimestral",
@@ -191,20 +192,30 @@ with col1:
     st.plotly_chart(fig_preco, use_container_width=True, config={"displayModeBar": False})
 
 with col2:
+    # --- GRÁFICO ANUAL (com cores condicionais) ---
     fig_anual = go.Figure()
+
+    colors_anual = ['#00cc96' if x >= 0 else '#ff4444' for x in df_anual["Lucro_Milhoes"]]
+    textpos_anual = ['outside' if x >= 0 else 'inside' for x in df_anual["Lucro_Milhoes"]]
+
     fig_anual.add_trace(go.Bar(
-        x=df_anual["Lucro_Milhoes"], y=df_anual["Label"],
+        x=df_anual["Lucro_Milhoes"], 
+        y=df_anual["Label"],
         orientation='h',
         text=[f"R$ {v:,.0f}M" for v in df_anual["Lucro_Milhoes"]],
-        textposition="outside",
-        marker_color="#00cc96"
+        textposition=textpos_anual,
+        marker_color=colors_anual,
+        textfont=dict(color='white')
     ))
     fig_anual.update_layout(
         title="Lucro Líquido Anual",
         xaxis=dict(showgrid=False),
         yaxis=dict(showgrid=False),
-        plot_bgcolor="#1a1a1a", paper_bgcolor="#1a1a1a", font_color="white",
-        margin=dict(l=20, r=100, t=60, b=40), height=320
+        plot_bgcolor="#1a1a1a", 
+        paper_bgcolor="#1a1a1a", 
+        font_color="white",
+        margin=dict(l=20, r=100, t=60, b=40), 
+        height=320
     )
     st.plotly_chart(fig_anual, use_container_width=True, config={"displayModeBar": False})
 
